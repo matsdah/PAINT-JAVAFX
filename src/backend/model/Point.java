@@ -2,7 +2,7 @@ package backend.model;
 
 public class Point {
 
-    public double x, y;
+    private double x, y;
 
     public Point(double x, double y) {
         this.x = x;
@@ -14,4 +14,11 @@ public class Point {
         return String.format("{%.2f , %.2f}", x, y);
     }
 
+    public double getX(){
+        return x;
+    }
+
+    public double getY(){
+        return y;
+    }
 }
