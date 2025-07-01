@@ -1,12 +1,23 @@
 package backend.model;
 
-public class Rectangle implements Figure {
+public class Rectangle implements Figure{
 
     private final Point topLeft, bottomRight;
 
     public Rectangle(Point topLeft, Point bottomRight) {
+        super(new Point[]{topLeft, bottomRight});
         this.topLeft = topLeft;
         this.bottomRight = bottomRight;
+    }
+
+    @Override
+    public move(int x, int y){
+
+    }
+
+    @Override
+    public boolean equals(Object o){
+
     }
 
     public Point getTopLeft() {
@@ -17,9 +28,11 @@ public class Rectangle implements Figure {
         return bottomRight;
     }
 
-    @Override
-    public String toString() {
-        return String.format("Rectángulo [ %s , %s ]", topLeft, bottomRight);
+    public double width() {
+        return bottomRight.getX() - topLeft.getX();
     }
 
+    public double height() {
+        return bottomRight.getY() - topLeft.getY();
+    }
 }

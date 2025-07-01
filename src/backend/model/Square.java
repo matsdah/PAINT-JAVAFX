@@ -1,13 +1,8 @@
 package backend.model;
 
-public class Square extends Rectangle implements Figure {
+public class Square extends Rectangle implements Figure{
 
     public Square(Point topLeft, double size) {
-        super(topLeft, new Point(topLeft.x + size, topLeft.y + size));
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Cuadrado [ %s , %s ]", topLeft, bottomRight);
+        super(topLeft, new Point(topLeft.getX() + validateSquareSize(size), topLeft.getY() + size));
     }
 }

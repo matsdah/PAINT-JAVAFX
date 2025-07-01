@@ -1,6 +1,6 @@
 package backend.model;
 
-public class Point {
+public class Point{
 
     private double x, y;
 
@@ -9,15 +9,9 @@ public class Point {
         this.y = y;
     }
 
-    @Override
-    public String toString() {
-        return String.format("{%.2f , %.2f}", x, y);
-    }
-
     public double getX(){
         return x;
     }
-
     public double getY(){
         return y;
     }
