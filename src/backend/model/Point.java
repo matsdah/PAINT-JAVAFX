@@ -1,4 +1,4 @@
-package backend.model;
+package src.backend.model;
 
 public class Point{
 

@@ -1,6 +1,6 @@
-package backend.model;
+package src.backend.model;
 
-public interface Figure{
+public abstract class Figure{
 
     private double borderSize;
     private Color borderColor;
