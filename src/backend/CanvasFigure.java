@@ -1,22 +1,19 @@
-public class CanvasFigure{
+package src.backend;
 
-    public class CanvasFigure(Figure fig, boolean isLightened, boolean isDarkened, boolean isVMirrored, boolean isHMirrored){
+import javafx.scene.canvas.GraphicsContext;
+import src.backend.model.*;
+
+public class CanvasFigure implements Movable, Drawable{
+
+    public CanvasFigure(Figure fig){
         this.fig = fig;
-        this.isLightened = isLightened;
-        this.isDarkened = isDarkened;
-        this.isVMirrored = isVMirrored;
-        this.isHMirrored = isHMirrored;
     }
 
-    private Figure fig;
+    private final Figure fig;
     private Figure lightenedFig;
     private Figure darkenedFig;
     private Figure vMirroredFig;
     private Figure hMirroredFig;
-    private boolean isLightened;
-    private boolean isDarkened;
-    private boolean isVMirrored;
-    private boolean isHMirrored;
 
     /*
      * Mueve la figura junto a todos los efectos. Cada figura debe saber moverse.
@@ -29,13 +26,28 @@ public class CanvasFigure{
         hMirroredFig.move(x, y);
     }
 
+    public boolean contains(Point point){
+        return fig.contains(point);
+    }
+
     public void setOffLightened(){
 
     }
 
     public void setOnLightened(){
-        if(!isLightened){
 
-        }
+    }
+
+    @Override
+    public void move(double deltaX, double deltaY) {
+        lightenedFig.move(deltaX, deltaY);
+        darkenedFig.move(deltaX, deltaY);
+        vMirroredFig.move(deltaX, deltaY);
+        hMirroredFig.move(deltaX, deltaY);
+    }
+
+    @Override
+    public void draw(GraphicsContext gc){
+        fig.draw(gc);
     }
 }

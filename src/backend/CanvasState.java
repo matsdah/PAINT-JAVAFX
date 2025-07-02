@@ -1,35 +1,68 @@
-package backend;
+package src.backend;
 
-import backend.model.Figure;
-
-import java.util.ArrayList;
-import java.util.Collection;
+import javafx.scene.paint.Color;
+import src.backend.model.*;
+import src.backend.model.Point;
+import java.util.*;
 import java.util.List;
 
-public class CanvasState{
+public class CanvasState implements Iterable<CanvasFigure>{
 
-    private final Collection<Figure> list = new ArrayList<>();
+    private final List<CanvasFigure> list = new ArrayList<>();        /* Array de las figuras del lienzo */
+
+    private CanvasFigure selectedFigure = null;     /* Figura seleccionada dentro del lienzo */
+
+    private Color copiedFillColor = null;           /* Color del portapapeles */
+    private Border copiedBorder = null;             /* Borde del portapapeles */
+    private boolean isCopied;                       /* Indica si hay un formato copiado */
 
     private boolean lightening;
     private boolean darkening;
     private boolean vMirror;
     private boolean hMirror;
-    private boolean isCopied;           /* Indica si hay un formato copiado */
-    private figure Figure;              /* Figura que guarda el formato copiado */
 
-    public Figure copy(Figure figure){
+    /*
+     * Copia el formato de la figura seleccionada.
+     */
+    /*public Figure copy(Figure figure){
 
-    }
+    }*/
 
+    /*
+     * Pega el formato de la figura seleccionada.
+     */
     public void paste(Figure figure){
 
     }
 
-    public void addFigure(Figure figure) {
+    /*
+     * Metodo que le asigna al atributo @selectedFigure la figura donde
+     * se contiene el puntero ingresado, o null si no contiene ninguna figura.
+     */
+    public CanvasFigure selectFigureAtPoint(Point point){
+        this.selectedFigure = null;
+        boolean found = false;
+
+        /* Recorro la lista de figuras hasta encontrar -o no- la figura ubicada en el punto */
+        for (int i = list.size() - 1; i >= 0 && !found; i--){
+            CanvasFigure aux = list.get(i);
+            if(aux.contains(point)){
+                this.selectedFigure = aux;
+                found = true;
+            }
+        }
+        return selectedFigure;
+    }
+
+    public void addFigure(Figure figure){
+        list.add(new CanvasFigure(figure));
+    }
+
+    public void addFigure(CanvasFigure figure){
         list.add(figure);
     }
 
-    public void deleteFigure(Figure figure) {
+    public void deleteFigure(CanvasFigure figure){
         list.remove(figure);
     }
 
@@ -49,7 +82,8 @@ public class CanvasState{
 
     }
 
-    public Iterable<Figure> figures() {
-        return List.copyOf(list);
+    @Override
+    public Iterator<CanvasFigure> iterator(){
+        return list.iterator();
     }
 }
