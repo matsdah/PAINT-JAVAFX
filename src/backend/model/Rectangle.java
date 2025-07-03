@@ -10,11 +10,17 @@ public class Rectangle extends Figure{
 
     private final Point topLeft, bottomRight;
 
-    public Rectangle(Point topLeft, Point bottomRight, Color fillColor, Border border){
-        super(new Point[]{topLeft, bottomRight}, fillColor, border);
-        this.topLeft = topLeft;
-        this.bottomRight = bottomRight;
+    public Rectangle(Point corner1, Point corner2, Color fillColor, Border border){
+        Point auxTL = new Point(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()));
+        Point auxBR = new Point(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()));
+        super(new Point[]{auxTL, auxBR}, fillColor, border);
+        this.topLeft = auxTL;
+        this.bottomRight = auxBR;
     } // no hay q verificar que efectiamente top left es top left y top right es top right? SI
+
+    protected Point getTopLeft(Point corner1, Point corner2){
+        return new Point(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()));
+    }
 
     @Override
     public boolean equals(Object o){
@@ -30,8 +36,8 @@ public class Rectangle extends Figure{
     @Override
     public void draw(GraphicsContext gc, boolean isSelected){
         gc.save();
-        gc.fillRect(topLeft.getX(), topLeft.getY(), width(), height());
         gc.setFill(this.fillColor);
+        gc.fillRect(topLeft.getX(), topLeft.getY(), width(), height());
         this.border.apply(gc);
         gc.setStroke(isSelected ? Color.RED : Color.BLACK);
         gc.strokeRect(topLeft.getX(), topLeft.getY(), width(), height());
@@ -56,7 +62,7 @@ public class Rectangle extends Figure{
      * dados sus dos puntos espaciales.
      */
     private double width(){
-        return bottomRight.getX() - topLeft.getX();
+        return Math.abs(bottomRight.getX() - topLeft.getX());
     }
 
     /*
@@ -64,7 +70,7 @@ public class Rectangle extends Figure{
      * dados sus dos puntos espaciales.
      */
     private double height(){
-        return bottomRight.getY() - topLeft.getY();
+        return Math.abs(bottomRight.getY() - topLeft.getY());
     }
 
     @Override

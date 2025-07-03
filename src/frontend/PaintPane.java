@@ -1,5 +1,4 @@
 package src.frontend;
-
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -28,7 +27,7 @@ public class PaintPane extends BorderPane{
 	private static final Color DEFAULT_BORDER_COLOR = Color.BLACK;
 	private static final Color SELECTED_BORDER_COLOR = Color.RED;
 
-	/*  --- Botones Barra Izquierda --- */
+	/* Botones Barra Izquierda */
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
 	private final ToggleButton rectangleButton = new ToggleButton("Rectángulo");
 	private final ToggleButton circleButton = new ToggleButton("Círculo");
@@ -39,14 +38,14 @@ public class PaintPane extends BorderPane{
 	private final Button copyFormatButton = new Button("Copiar Fmt.");
 	private final Button pasteFormatButton = new Button("Pegar Fmt.");
 
-	/* --- Botones Barra Derecha (Operaciones) --- */
+	/* Botones Barra Derecha para Operaciones */
 	private final ToggleButton divideByLengthButton = new ToggleButton("Dividir An.");
 	private final ToggleButton divideByHeightButton = new ToggleButton("Dividir Al.");
 	private final ToggleButton divideButton = new ToggleButton("Dividir");
 	private final ToggleButton multiplyButton = new ToggleButton("Multiplicar");
 	private final ToggleButton moveToButton = new ToggleButton("Trasladar");
 
-	/* --- Barra Superior (Efectos) --- */
+	/* Barra Superior para Efectos */
 	private final Label effectsLabel = createTitleLabel("Efectos:");
 	private final CheckBox lightenCheckbox = new CheckBox("Aclaramiento");
 	private final CheckBox darkenCheckbox = new CheckBox("Oscurecimiento");
@@ -54,8 +53,8 @@ public class PaintPane extends BorderPane{
 	private final CheckBox mirrorVCheckbox = new CheckBox("Espejo Vertical");
 	private final HBox effectsRow = buildCheckboxRow(lightenCheckbox, darkenCheckbox, mirrorHCheckbox, mirrorVCheckbox);
 
-	/* Selector de color de relleno */
-	private final ColorPicker fillColorPicker = new ColorPicker(Color.YELLOW);
+	/* Selector de color de relleno (ColorPicker) */
+	private ColorPicker fillColorPicker = new ColorPicker(DEFAULT_FILL_COLOR);
 
 	/* Dibujar una figura */
 	private Point startPoint;
@@ -167,20 +166,25 @@ public class PaintPane extends BorderPane{
 		canvas.setOnMouseReleased(this::onMouseRelease);
 		canvas.setOnMouseMoved(this::onMouseMoved);
 		canvas.setOnMouseDragged(this::onMouseDragged);
+		canvas.setOnMouseClicked(this::onMouseClicked);
 
 		deleteButton.setOnAction(event -> onDeleteButton());
 		copyFormatButton.setOnAction(event -> onCopyFormatButton());
 		pasteFormatButton.setOnAction(event -> onPasteFormatButton());
 		borderStyleChooser.setOnAction(event -> onChangeFigureProperty());
-		de
+		fillColorPicker.setOnAction(event -> onChangeFigureProperty());
+
 		setLeft(buttonsBoxLeft);
 		setRight(buttonsBoxRight);
 		buttonsTopBox.setAlignment(Pos.CENTER);
 		setTop(buttonsTopBox);
 		setBottom(statusPane);
 		Pane canvasWrapper = new Pane(canvas);
+
 		canvas.widthProperty().bind(canvasWrapper.widthProperty());
 		canvas.heightProperty().bind(canvasWrapper.heightProperty());
+		canvas.widthProperty().addListener(evt -> redrawCanvas());
+		canvas.heightProperty().addListener(evt -> redrawCanvas());
 		setCenter(canvasWrapper);
 	}
 
@@ -223,9 +227,13 @@ public class PaintPane extends BorderPane{
 	 * Se ejecuta cuando se suelta el mouse. Según la herramienta activa
 	 * crea una nueva figura con startPoint y endPoint. Agrega esa figura al canvasState y la dibuja.
 	 */
+
+	// A revisar: Mezcla front con el back
+	// El front hace calculos que deberia de hacer el back
+	// El front solamente debe pasar los puntos donde hace click y donde suelta
 	private void onMouseRelease(MouseEvent event){
 		Point endPoint = new Point(event.getX(), event.getY());
-		if(selectionButton.isSelected() || startPoint == null || endPoint.getX() <= startPoint.getX() || endPoint.getY() <= startPoint.getY()){
+		if(selectionButton.isSelected() || startPoint == null){
 			return;
 		}
 
@@ -236,21 +244,15 @@ public class PaintPane extends BorderPane{
 		if(rectangleButton.isSelected()){
 			newFigure = new Rectangle(startPoint, endPoint, actualColor, actualBorderStyle);
 		} else if(circleButton.isSelected()){
-			double circleRadius = Math.abs(endPoint.getX() - startPoint.getX());
-			newFigure = new Circle(startPoint, circleRadius, actualColor, actualBorderStyle);
+			newFigure = new Circle(startPoint, endPoint, actualColor, actualBorderStyle);
 		} else if(squareButton.isSelected()){
-			double size = Math.abs(endPoint.getX() - startPoint.getX());
-			newFigure = new Square(startPoint, size, actualColor, actualBorderStyle);
+			newFigure = new Square(startPoint, endPoint, actualColor, actualBorderStyle);
 		} else if(ellipseButton.isSelected()){
-			Point centerPoint = new Point(Math.abs(endPoint.getX() + startPoint.getX()) / 2, (Math.abs((endPoint.getY() + startPoint.getY())) / 2));
-			double sMayorAxis = Math.abs(endPoint.getX() - startPoint.getX());
-			double sMinorAxis = Math.abs(endPoint.getY() - startPoint.getY());
-			newFigure = new Ellipse(centerPoint, sMayorAxis, sMinorAxis, actualColor, actualBorderStyle);
+			newFigure = new Ellipse(startPoint, endPoint, actualColor, actualBorderStyle);
 		}
 		if(newFigure != null){
 			canvasState.addFigure(newFigure);
 		}
-
 		startPoint = null;
 		redrawCanvas();
 	}
@@ -327,33 +329,6 @@ public class PaintPane extends BorderPane{
 		for(CanvasFigure figure : canvasState){
 			boolean isSelected = figure.equals(selectedFigure);
 			figure.draw(gc, isSelected);
-		}
-	}
-
-	private void applyBorderStyle(GraphicsContext gc, Border border){
-		if(border == null) border = Border.NORMAL;
-
-		switch(border){
-			case PIXELEADO:
-				gc.setLineWidth(5);
-				gc.setLineCap(StrokeLineCap.BUTT);
-				gc.setLineDashes(1, 1);
-				break;
-			case PUNTEADO_FINO:
-				gc.setLineWidth(1);
-				gc.setLineCap(StrokeLineCap.ROUND);
-				gc.setLineDashes(2, 6);
-				break;
-			case PUNTEADO_COMPLEJO:
-				gc.setLineWidth(3);
-				gc.setLineCap(StrokeLineCap.SQUARE);
-				gc.setLineDashes(25, 10, 15, 10);
-				break;
-			case NORMAL:
-			default:
-				gc.setLineWidth(1);
-				gc.setLineDashes(null);
-				break;
 		}
 	}
 }

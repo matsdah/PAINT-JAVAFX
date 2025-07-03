@@ -4,14 +4,8 @@ import src.backend.Colorable;
 import src.backend.Drawable;
 import src.backend.Movable;
 import java.util.List;
-import java.util.Objects;
 
 public abstract class Figure implements Movable, Colorable, Drawable {
-
-/*
-    private static final Color borderColor = Color.BLACK;
-    private static final Color selectedBorder = Color.RED;
-*/
 
     protected Color fillColor;                /* Color del relleno de la figura */
     protected Border border;                  /* Estilo de borde de la figura */
@@ -37,10 +31,10 @@ public abstract class Figure implements Movable, Colorable, Drawable {
     }
 
     public abstract Figure multiply();
-
-    public void transfer(int x, int y){
-
-    }
+/*
+    public void translate(Point newPosition) {
+        this.points[0] = newPosition;
+    }*/
 
     @Override
     public void setFillColor(Color fillColor){
@@ -58,17 +52,6 @@ public abstract class Figure implements Movable, Colorable, Drawable {
             p.move(deltaX, deltaY);
         }
     }
-
-    @Override
-    public boolean equals(Object o){
-        return o instanceof Figure f && (Objects.equals(fillColor, f.getFillColor())) && (border == f.getBorder());
-    }
-
-    @Override
-    public int hashCode(){
-        return Objects.hash(fillColor, border);
-    }
-
 
     public List<Figure> widthDivide(int n){
         Point aux = new Point(1.0 / n, 1);

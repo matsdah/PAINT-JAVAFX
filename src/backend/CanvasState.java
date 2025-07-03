@@ -93,11 +93,6 @@ public class CanvasState implements Iterable<CanvasFigure>{
     }
 
 
-
-    public void transfer(CanvasFigure figure, int x, int y){
-        figure.transfer(x, y);
-    }
-
     @Override
     public Iterator<CanvasFigure> iterator(){
         return figures.iterator();

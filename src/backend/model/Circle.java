@@ -3,12 +3,17 @@ import javafx.scene.paint.Color;
 
 public class Circle extends Ellipse{
 
-    public Circle(Point centerPoint, double radius, Color fillColor, Border border){
-        super(centerPoint, 2 * radius, 2*  radius, fillColor, border);
+    public Circle(Point centerPoint, Point radiusPoint, Color fillColor, Border border){
+        double auxX = centerPoint.getX() - radiusPoint.getX();
+        double auxY = centerPoint.getY() - radiusPoint.getY();
+        double radius = Math.sqrt((auxX * auxX) + (auxY * auxY));
+
+        Point cornerPoint = new Point(centerPoint.getX() + radius, centerPoint.getY() + radius);
+        super(centerPoint, cornerPoint, fillColor, border);
     }
 
     public double getRadius(){
-        return sMayorAxis / 2;
+        return difX;
     }
 
     @Override

@@ -1,11 +1,14 @@
 package src.backend.model;
-
 import javafx.scene.paint.Color;
 
 public class Square extends Rectangle{
 
-    public Square(Point topLeft, double size, Color fillColor, Border border){
-        super(topLeft, new Point(topLeft.getX() + validateSquareSize(size), topLeft.getY() + size), fillColor, border);
+    //Chequear como hacer para no repetir codigo con los auxTL y auxBR
+    public Square(Point corner1, Point corner2, Color fillColor, Border border){
+        Point auxTL = new Point(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()));
+        Point auxBR = new Point(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()));
+        double size = Math.max(Math.abs(auxTL.getX() - auxBR.getX()), Math.abs(auxTL.getY() - auxBR.getY()));
+        super(auxTL, new Point(auxTL.getX() + size, auxTL.getY() + size), fillColor, border);
     }
 
     /*

@@ -6,7 +6,7 @@ import src.backend.model.*;
 public class CanvasFigure implements Movable, Drawable{
     private final Figure fig;           /* Figura principal */
 
-    /* Efectos */
+    /* Efectos de la figura */
     private Figure lightenedFig;
     private Figure darkenedFig;
     private Figure vMirroredFig;
@@ -31,14 +31,14 @@ public class CanvasFigure implements Movable, Drawable{
     public void multiply(){
 
     }
-
+/*
     public void transfer(int x, int y){
         fig.transfer(x, y);
         lightenedFig.transfer(x, y);
         darkenedFig.transfer(x, y);
         vMirroredFig.transfer(x, y);
         hMirroredFig.transfer(x, y);
-    }
+    }*/
 
     public boolean contains(Point point){
         return fig.contains(point);
