@@ -1,12 +1,13 @@
 package src.backend.model;
+import javafx.scene.paint.Color;
 
-public class Circle extends Ellipse {
+public class Circle extends Ellipse{
 
-    public Circle(Point centerPoint, double radius) {
-        super(centerPoint, 2 * radius, 2*  radius);
+    public Circle(Point centerPoint, double radius, Color fillColor, Border border){
+        super(centerPoint, 2 * radius, 2*  radius, fillColor, border);
     }
 
-    public double getRadius() {
+    public double getRadius(){
         return sMayorAxis / 2;
     }
 

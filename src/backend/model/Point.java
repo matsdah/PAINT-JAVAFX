@@ -1,8 +1,8 @@
 package src.backend.model;
-
 import src.backend.Movable;
+import java.util.Objects;
 
-public class Point implements Movable {
+public class Point implements Movable{
 
     private double x, y;
 
@@ -28,5 +28,15 @@ public class Point implements Movable {
     @Override
     public String toString(){
         return "Pointer at: [ %.2f : %.2f ]".formatted(x, y);
+    }
+
+    @Override
+    public boolean equals(Object o){
+        return o instanceof Point p && (Double.compare(p.getX(), x) == 0) && Double.compare(p.getY(), y) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 }
