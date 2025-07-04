@@ -1,8 +1,6 @@
 package src.backend.model;
-
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,10 +14,25 @@ public class Rectangle extends Figure{
         super(new Point[]{auxTL, auxBR}, fillColor, border);
         this.topLeft = auxTL;
         this.bottomRight = auxBR;
-    } // no hay q verificar que efectiamente top left es top left y top right es top right? SI
+    }
 
-    protected Point getTopLeft(Point corner1, Point corner2){
-        return new Point(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()));
+    @Override
+    public void drawFill(GraphicsContext gc){
+        gc.fillRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
+    }
+
+    @Override
+    public Figure createHorizontalMirror(){
+        Point newTopLeft = new Point(getTopLeft().getX(), getBottomRight().getY());
+        Point newBottomRight = new Point(getBottomRight().getX(), getBottomRight().getY() + getHeight());
+        return new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder());
+    }
+
+    @Override
+    public Figure createVerticalMirror(){
+        Point newTopLeft = new Point(getBottomRight().getX(), getTopLeft().getY());
+        Point newBottomRight = new Point(getBottomRight().getX() + getWidth(), getBottomRight().getY());
+        return new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder());
     }
 
     @Override
@@ -37,10 +50,10 @@ public class Rectangle extends Figure{
     public void draw(GraphicsContext gc, boolean isSelected){
         gc.save();
         gc.setFill(this.fillColor);
-        gc.fillRect(topLeft.getX(), topLeft.getY(), width(), height());
+        gc.fillRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
         this.border.apply(gc);
         gc.setStroke(isSelected ? Color.RED : Color.BLACK);
-        gc.strokeRect(topLeft.getX(), topLeft.getY(), width(), height());
+        gc.strokeRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
         gc.restore();
     }
 
@@ -61,7 +74,7 @@ public class Rectangle extends Figure{
      * Funcion privada que calcula el ancho de un rectangulo
      * dados sus dos puntos espaciales.
      */
-    private double width(){
+    private double getWidth(){
         return Math.abs(bottomRight.getX() - topLeft.getX());
     }
 
@@ -69,38 +82,44 @@ public class Rectangle extends Figure{
      * Funcion privada que calcula el alto de un rectangulo
      * dados sus dos puntos espaciales.
      */
-    private double height(){
+    private double getHeight(){
         return Math.abs(bottomRight.getY() - topLeft.getY());
     }
 
     @Override
-    public Figure multiply() {
-        // Crea un nuevo rectángulo con las mismas dimensiones.
-        Rectangle clon = new Rectangle(this.topLeft, this.bottomRight, this.getFillColor(), this.getBorder());
-
-        // 2. Copia las propiedades de formato y efectos (es crucial que estos
-        //    objetos también tengan un metodo para ser clonados).
-        //    Esto cumple con los requisitos del enunciado[cite: 411, 484].
-//        clon.setPropiedadesFormato(this.getPropiedadesFormato().clonar());
-//        clon.setEfectos(this.getEfectos().clonar());
-
-        return clon;
+    public Figure clone(){
+        return new Rectangle(topLeft.clone(), bottomRight.clone(), this.fillColor, this.border);
     }
-
 
     @Override
-    public List<Figure> division(int n, Point dir){
-        List<Figure> aux = new ArrayList<>();
-        double auxWidth = width() / n;
-
-        for(int i = 0; i < n; i++){
-
-
+    public List<Figure> widthDivide(int n){
+        if(n <= 0){
+            return List.of();
         }
 
-        return aux;
+        List<Figure> newRects = new ArrayList<>();
+        double newWidth = getWidth() / n;
+        for(int i = 0; i < n; i++){
+            Point newTopLeft = new Point(topLeft.getX() + i * newWidth, topLeft.getY());
+            Point newBottomRight = new Point(topLeft.getX() + (i + 1) * newWidth, bottomRight.getY());
+            newRects.add(new Rectangle(newTopLeft, newBottomRight, this.fillColor, this.border));
+        }
+        return newRects;
     }
 
+    @Override
+    public List<Figure> heightDivide(int n){
+        if (n <= 0){
+            return List.of();
+        }
 
-
+        List<Figure> newRects = new ArrayList<>();
+        double newHeight = getHeight() / n;
+        for(int i = 0; i < n; i++){
+            Point newTopLeft = new Point(topLeft.getX(), topLeft.getY() + i * newHeight);
+            Point newBottomRight = new Point(bottomRight.getX(), topLeft.getY() + (i + 1) * newHeight);
+            newRects.add(new Rectangle(newTopLeft, newBottomRight, this.fillColor, this.border));
+        }
+        return newRects;
+    }
 }

@@ -19,10 +19,20 @@ public class Point implements Movable{
         return y;
     }
 
+    public Point clone(){
+        return new Point(this.x, this.y);
+    }
+
     @Override
     public void move(double deltaX, double deltaY){
         x += deltaX;
         y += deltaY;
+    }
+
+    @Override
+    public void moveTo(double x, double y){
+        this.x = x;
+        this.y = y;
     }
 
     @Override

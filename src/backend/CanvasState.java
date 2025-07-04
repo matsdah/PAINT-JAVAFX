@@ -1,5 +1,4 @@
 package src.backend;
-import javafx.scene.paint.Color;
 import src.backend.model.*;
 import src.backend.model.Point;
 import java.util.*;
@@ -8,39 +7,8 @@ import java.util.List;
 public class CanvasState implements Iterable<CanvasFigure>{
 
     private final List<CanvasFigure> figures = new ArrayList<>();        /* Array de las figuras del lienzo */
-    private static final double OFFSET = 15.0;
-    private CanvasFigure selectedFigure;     /* Figura seleccionada dentro del lienzo */
-
-    private Color copiedFillColor = null;           /* Color del portapapeles */
-    private Border copiedBorder = null;             /* Borde del portapapeles */
-    private boolean isCopied = false;               /* Indica si hay un formato copiado */
-
-    private boolean lightening;
-    private boolean darkening;
-    private boolean vMirror;
-    private boolean hMirror;
-
-    private final static double DEFAULT_OFFSET_MULTIPLICATION = 10.0;
-
-    /*
-     * Copia el formato de la figura seleccionada.
-     * Guarda el valor del color y el borde de la figura.
-     */
-    public void copy(CanvasFigure figure){
-        if(figure != null){
-            copiedFillColor = figure.getFillColor();
-            copiedBorder = figure.getBorder();
-            this.isCopied = true;
-        }
-    }
-
-    /*
-     * Pega el formato de la figura seleccionada.
-     */
-    public void paste(CanvasFigure figure){
-        figure.setBorder(copiedBorder);
-        figure.setFillColor(copiedFillColor);
-    }
+    private CanvasFigure selectedFigure;                                 /* Figura seleccionada dentro del lienzo */
+    private final static double DEFAULT_OFFSET_MULTIPLy = 10.0;
 
     /*
      * Metodo que le asigna al atributo @selectedFigure la figura donde
@@ -61,37 +29,55 @@ public class CanvasState implements Iterable<CanvasFigure>{
         return selectedFigure;
     }
 
-    public void addFigure(Figure figure){
-        figures.add(new CanvasFigure(figure));
+    public void addFigure(Figure figure, boolean lighten, boolean darken, boolean hMirror, boolean vMirror){
+        figures.add(new CanvasFigure(figure, lighten, darken, hMirror, vMirror));
     }
-
-//    public void addFigure(CanvasFigure figure){
-//        list.add(figure);
-//    }
 
     public void deleteFigure(CanvasFigure figure){
         figures.remove(figure);
     }
 
-    public void wDivide(CanvasFigure figure, int N){
-        List<CanvasFigure> aux = new ArrayList<>();
+    public void widthDivide(CanvasFigure figure, int n){
+        if(figure == null || n <= 0){
+            return;
+        }
 
-    }
-
-    public void hDivide(CanvasFigure figure, int N){
-
-    }
-
-    public void multiply(CanvasFigure figure, int N){
-        if(N > 1 && figures.contains(figure)){
-            for(int i = 1; i < N; i++){
-                CanvasFigure toMultiply = figure.copy();
-                toMultiply.move(i * DEFAULT_OFFSET_MULTIPLICATION, i * DEFAULT_OFFSET_MULTIPLICATION);
-                figures.add(toMultiply);
-            }
+        List<CanvasFigure> newFigures = figure.widthDivide(n);
+        if(!newFigures.isEmpty()){
+            figures.remove(figure);
+            figures.addAll(newFigures);
         }
     }
 
+    public void heightDivide(CanvasFigure figure, int n){
+        if(figure == null || n <= 0){
+            return;
+        }
+
+        List<CanvasFigure> newFigures = figure.heightDivide(n);
+        if(!newFigures.isEmpty()){
+            figures.remove(figure);
+            figures.addAll(newFigures);
+        }
+    }
+
+    public void multiply(CanvasFigure figure, int n){
+        if (figure == null || n <= 1){
+            return;
+        }
+        for(int i = 1; i < n; i++){
+            CanvasFigure copy = figure.copy();
+            copy.move(i * DEFAULT_OFFSET_MULTIPLy, i * DEFAULT_OFFSET_MULTIPLy);
+            figures.add(copy);
+        }
+    }
+
+    public void moveTo(CanvasFigure figure, Point target){
+        if(figure == null || target == null){
+            return;
+        }
+        figure.moveTo(target.getX(), target.getY());
+    }
 
     @Override
     public Iterator<CanvasFigure> iterator(){

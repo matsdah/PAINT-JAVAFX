@@ -7,7 +7,6 @@ public class Circle extends Ellipse{
         double auxX = centerPoint.getX() - radiusPoint.getX();
         double auxY = centerPoint.getY() - radiusPoint.getY();
         double radius = Math.sqrt((auxX * auxX) + (auxY * auxY));
-
         Point cornerPoint = new Point(centerPoint.getX() + radius, centerPoint.getY() + radius);
         super(centerPoint, cornerPoint, fillColor, border);
     }

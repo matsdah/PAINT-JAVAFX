@@ -1,11 +1,12 @@
 package src.backend.model;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import src.backend.Colorable;
 import src.backend.Drawable;
 import src.backend.Movable;
 import java.util.List;
 
-public abstract class Figure implements Movable, Colorable, Drawable {
+public abstract class Figure implements Movable, Colorable, Drawable{
 
     protected Color fillColor;                /* Color del relleno de la figura */
     protected Border border;                  /* Estilo de borde de la figura */
@@ -30,12 +31,6 @@ public abstract class Figure implements Movable, Colorable, Drawable {
         this.border = border;
     }
 
-    public abstract Figure multiply();
-/*
-    public void translate(Point newPosition) {
-        this.points[0] = newPosition;
-    }*/
-
     @Override
     public void setFillColor(Color fillColor){
         this.fillColor = fillColor;
@@ -47,22 +42,34 @@ public abstract class Figure implements Movable, Colorable, Drawable {
     }
 
     @Override
+    public void moveTo(double x, double y){
+        if(points.length > 0){
+            double deltaX = x - points[0].getX();
+            double deltaY = y - points[0].getY();
+            move(deltaX, deltaY);
+        }
+    }
+
+    @Override
     public void move(double deltaX, double deltaY){
         for(Point p : points){
             p.move(deltaX, deltaY);
         }
     }
 
-    public List<Figure> widthDivide(int n){
-        Point aux = new Point(1.0 / n, 1);
-        return division(n, aux);
-    }
+    /*
+     * Cada figura debe saber como dividirse a lo ancho y a lo alto, como espejarse
+     * horizontalmente y verticalmente, como dibujarse sin contorno y como clonarse.
+     */
+    public abstract List<Figure> widthDivide(int n);
 
-    public List<Figure> heightDivide(int n){
-        Point aux = new Point(1, 1.0 / n);
-        return division(n, aux);
-    }
+    public abstract List<Figure> heightDivide(int n);
 
-    protected abstract List<Figure> division(int n, Point dir);
+    public abstract Figure clone();
 
+    public abstract void drawFill(GraphicsContext gc);
+
+    public abstract Figure createHorizontalMirror();
+
+    public abstract Figure createVerticalMirror();
 }

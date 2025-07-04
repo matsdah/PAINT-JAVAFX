@@ -2,7 +2,6 @@ package src.frontend;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.shape.StrokeLineCap;
 import src.backend.CanvasFigure;
 import src.backend.CanvasState;
 import src.backend.model.*;
@@ -17,15 +16,16 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 
+import java.util.Optional;
+
+import static javax.swing.JOptionPane.showInputDialog;
+
 public class PaintPane extends BorderPane{
 
 	private final CanvasState canvasState;					/* Estado del canvas */
 	private final Canvas canvas = new Canvas(800, 600);
 	private final GraphicsContext gc = canvas.getGraphicsContext2D();
-
 	private static final Color DEFAULT_FILL_COLOR = Color.YELLOW;
-	private static final Color DEFAULT_BORDER_COLOR = Color.BLACK;
-	private static final Color SELECTED_BORDER_COLOR = Color.RED;
 
 	/* Botones Barra Izquierda */
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
@@ -41,7 +41,6 @@ public class PaintPane extends BorderPane{
 	/* Botones Barra Derecha para Operaciones */
 	private final ToggleButton divideByLengthButton = new ToggleButton("Dividir An.");
 	private final ToggleButton divideByHeightButton = new ToggleButton("Dividir Al.");
-	private final ToggleButton divideButton = new ToggleButton("Dividir");
 	private final ToggleButton multiplyButton = new ToggleButton("Multiplicar");
 	private final ToggleButton moveToButton = new ToggleButton("Trasladar");
 
@@ -124,7 +123,7 @@ public class PaintPane extends BorderPane{
 		this.statusPane = statusPane;
 
 		ToggleButton[] toolsLeft = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
-		ToggleButton[] toolsRight = {divideByLengthButton, divideByHeightButton, divideButton, multiplyButton, moveToButton};
+		ToggleButton[] toolsRight = {divideByLengthButton, divideByHeightButton, multiplyButton, moveToButton};
 
 		initToggleButtons(toolsLeft, new ToggleGroup());
 		initToggleButtons(toolsRight, new ToggleGroup());
@@ -152,7 +151,7 @@ public class PaintPane extends BorderPane{
 
 		VBox buttonsBoxRight = buildVBox(
 				createTitleLabel("Operaciones:"),
-				new VBox(divideByLengthButton, divideByHeightButton, divideButton),
+				new VBox(divideByLengthButton, divideByHeightButton),
 				multiplyButton,
 				moveToButton
 		);
@@ -174,6 +173,16 @@ public class PaintPane extends BorderPane{
 		borderStyleChooser.setOnAction(event -> onChangeFigureProperty());
 		fillColorPicker.setOnAction(event -> onChangeFigureProperty());
 
+		lightenCheckbox.setOnAction(event -> onEffectChanged());
+		darkenCheckbox.setOnAction(event -> onEffectChanged());
+		mirrorHCheckbox.setOnAction(event -> onEffectChanged());
+		mirrorVCheckbox.setOnAction(event -> onEffectChanged());
+
+		divideByLengthButton.setOnAction(event -> onDivideWidth());
+		divideByHeightButton.setOnAction(event -> onDivideHeight());
+		multiplyButton.setOnAction(event -> onMultiply());
+		moveToButton.setOnAction(event -> onMoveTo());
+
 		setLeft(buttonsBoxLeft);
 		setRight(buttonsBoxRight);
 		buttonsTopBox.setAlignment(Pos.CENTER);
@@ -186,6 +195,88 @@ public class PaintPane extends BorderPane{
 		canvas.widthProperty().addListener(evt -> redrawCanvas());
 		canvas.heightProperty().addListener(evt -> redrawCanvas());
 		setCenter(canvasWrapper);
+	}
+
+	// Faltarian los try catch para cada divide, multiply y moveTo!
+	private void onDivideWidth(){
+		if(selectedFigure == null){
+			statusPane.updateStatus("Seleccione una figura...");
+			return;
+		}
+		Optional<String> result = showInputDialog("Dividir a lo ancho", "Ingrese cant. de divisiones:").describeConstable();
+		result.ifPresent(nStr -> {
+			int n = Integer.parseInt(nStr);
+			if (n <= 0) throw new NumberFormatException();
+			canvasState.widthDivide(selectedFigure, n);
+			selectedFigure = null;
+			redrawCanvas();
+		});
+	}
+
+	private void onDivideHeight(){
+		if (selectedFigure == null) {
+			statusPane.updateStatus("Seleccione una figura...");
+			return;
+		}
+		Optional<String> result = showInputDialog("Dividir a lo alto", "Ingrese cant. de divisiones:").describeConstable();
+		result.ifPresent(nStr -> {
+				int n = Integer.parseInt(nStr);
+				if (n <= 0) throw new NumberFormatException();
+				canvasState.heightDivide(selectedFigure, n);
+				selectedFigure = null;
+				redrawCanvas();
+			});
+	}
+
+	private void onMultiply(){
+		if(selectedFigure == null){
+			statusPane.updateStatus("Seleccione una figura...");
+			return;
+		}
+		Optional<String> result = showInputDialog("Multiplicar figura", "Ingrese la cant. de copias:").describeConstable();
+		result.ifPresent(nStr -> {
+			int n = Integer.parseInt(nStr);
+			if (n <= 1) throw new NumberFormatException();
+			canvasState.multiply(selectedFigure, n);
+			redrawCanvas();
+		});
+	}
+
+	private void onMoveTo(){
+		if(selectedFigure == null){
+			statusPane.updateStatus("Seleccione una figura...");
+			return;
+		}
+		Optional<String> result = showInputDialog("Trasladar figura", "Ingrese la coord. [X, Y]:").describeConstable();
+		result.ifPresent(coords -> {
+				String[] parts = coords.split(","); // [cite: 325]
+				if (parts.length != 2) throw new NumberFormatException();
+				double x = Double.parseDouble(parts[0].trim());
+				double y = Double.parseDouble(parts[1].trim());
+				canvasState.moveTo(selectedFigure, new Point(x, y));
+				redrawCanvas();
+		});
+	}
+
+	/*
+	 * Metodos privado para manejar y actualizar los eventos de los efectos
+	 * de aclarecimiento, oscurecimiento y espejos.
+ 	*/
+	private void updateEffectCheckboxes(CanvasFigure figure){
+		lightenCheckbox.setSelected(figure.hasLightenEffect());
+		darkenCheckbox.setSelected(figure.hasDarkenEffect());
+		mirrorHCheckbox.setSelected(figure.hasHorizontalMirrorEffect());
+		mirrorVCheckbox.setSelected(figure.hasVerticalMirrorEffect());
+	}
+
+	private void onEffectChanged(){
+		if(selectedFigure != null){
+			selectedFigure.setLightenEffect(lightenCheckbox.isSelected());
+			selectedFigure.setDarkenEffect(darkenCheckbox.isSelected());
+			selectedFigure.setHorizontalMirrorEffect(mirrorHCheckbox.isSelected());
+			selectedFigure.setVerticalMirrorEffect(mirrorVCheckbox.isSelected());
+			redrawCanvas();
+		}
 	}
 
 	/*
@@ -221,19 +312,23 @@ public class PaintPane extends BorderPane{
 	 */
 	private void onMousePressed(MouseEvent event){
 		startPoint = new Point(event.getX(), event.getY());
+		if(selectionButton.isSelected()){
+			selectedFigure = canvasState.selectFigureAtPoint(startPoint);
+			if(selectedFigure != null){
+				statusPane.updateStatus("Arrastrando: " + selectedFigure);
+				updateEffectCheckboxes(selectedFigure);
+			}
+			redrawCanvas();
+		}
 	}
 
 	/*
 	 * Se ejecuta cuando se suelta el mouse. Según la herramienta activa
 	 * crea una nueva figura con startPoint y endPoint. Agrega esa figura al canvasState y la dibuja.
 	 */
-
-	// A revisar: Mezcla front con el back
-	// El front hace calculos que deberia de hacer el back
-	// El front solamente debe pasar los puntos donde hace click y donde suelta
 	private void onMouseRelease(MouseEvent event){
 		Point endPoint = new Point(event.getX(), event.getY());
-		if(selectionButton.isSelected() || startPoint == null){
+        if(selectionButton.isSelected() || startPoint == null){
 			return;
 		}
 
@@ -250,8 +345,9 @@ public class PaintPane extends BorderPane{
 		} else if(ellipseButton.isSelected()){
 			newFigure = new Ellipse(startPoint, endPoint, actualColor, actualBorderStyle);
 		}
+
 		if(newFigure != null){
-			canvasState.addFigure(newFigure);
+			canvasState.addFigure(newFigure, lightenCheckbox.isSelected(), darkenCheckbox.isSelected(), mirrorHCheckbox.isSelected(), mirrorVCheckbox.isSelected());
 		}
 		startPoint = null;
 		redrawCanvas();

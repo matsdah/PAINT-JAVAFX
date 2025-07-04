@@ -1,5 +1,4 @@
 package src.frontend;
-
 import src.backend.CanvasState;
 import javafx.scene.layout.VBox;
 

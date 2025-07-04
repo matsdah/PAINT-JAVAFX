@@ -2,6 +2,7 @@ package src.backend.model;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Ellipse extends Figure{
@@ -17,13 +18,27 @@ public class Ellipse extends Figure{
     }
 
     @Override
-    public boolean equals(Object o){
-        return o instanceof Ellipse e && (centerPoint.equals(e.centerPoint)) && (Double.compare(difX, e.difX) == 0) && (Double.compare(difY, e.difY) == 0);
+    public void drawFill(GraphicsContext gc){
+        gc.fillOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
     }
 
     @Override
-    protected List<Figure> division(int n, Point dir) {
-        return List.of();
+    public Figure createHorizontalMirror(){
+        Point newCenter = new Point(centerPoint.getX(), centerPoint.getY() + (difY * 2));
+        Point newRadiusPoint = new Point(newCenter.getX() + difX, newCenter.getY() + difY);
+        return new Ellipse(newCenter, newRadiusPoint, getFillColor(), getBorder());
+    }
+
+    @Override
+    public Figure createVerticalMirror(){
+        Point newCenter = new Point(centerPoint.getX() + (difX * 2), centerPoint.getY());
+        Point newRadiusPoint = new Point(newCenter.getX() + difX, newCenter.getY() + difY);
+        return new Ellipse(newCenter, newRadiusPoint, getFillColor(), getBorder());
+    }
+
+    @Override
+    public boolean equals(Object o){
+        return o instanceof Ellipse e && (centerPoint.equals(e.centerPoint)) && (Double.compare(difX, e.difX) == 0) && (Double.compare(difY, e.difY) == 0);
     }
 
     @Override
@@ -46,21 +61,58 @@ public class Ellipse extends Figure{
     }
 
     @Override
-    public String toString(){
-        return String.format("Elipse [Centro: %s, Radio Mayor: %.2f, Radio Menor: %.2f]", centerPoint, Math.max(difX, difY), Math.min(difX, difY));
+    public void moveTo(double x, double y){
+        double newCenterX = x + this.difX;
+        double newCenterY = y + this.difY;
+        super.moveTo(newCenterX, newCenterY);
     }
 
     @Override
-    public Figure multiply() {
-        // 1. Crea una nueva elipse con los mismos radios.
-        Ellipse clon = new Ellipse(this.centerPoint, new Point(centerPoint.getX() + (difX / 2), centerPoint.getY() + (difY / 2)), this.getFillColor(), this.getBorder());
+    public List<Figure> widthDivide(int n){
+        if (n <= 0){
+            return List.of();
+        }
 
-        // 2. Copia las propiedades de formato y efectos. [cite: 411, 484]
-        // clon.setPropiedadesFormato(this.getPropiedadesFormato().clonar());
-        // clon.setEfectos(this.getEfectos().clonar());
+        List<Figure> newEllipses = new ArrayList<>();
+        double newRadiusX = this.difX / n;
+        double originalLeftX = centerPoint.getX() - this.difX;
 
-        return clon;
+        for(int i = 0; i < n; i++){
+            Point newCenter = new Point(originalLeftX + newRadiusX + (i * 2 * newRadiusX), centerPoint.getY());
+            Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + this.difY);
+            newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
+        }
+
+        return newEllipses;
     }
 
+    @Override
+    public List<Figure> heightDivide(int n){
+        if (n <= 0){
+            return List.of();
+        }
 
+        List<Figure> newEllipses = new ArrayList<>();
+        double newRadiusY = this.difY / n;
+        double originalTopY = centerPoint.getY() - this.difY;
+
+        for(int i = 0; i < n; i++){
+            Point newCenter = new Point(centerPoint.getX(), originalTopY + newRadiusY + (i * 2 * newRadiusY));
+            Point newRadiusPoint = new Point(newCenter.getX() + this.difX, newCenter.getY() + newRadiusY);
+            newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
+        }
+
+        return newEllipses;
+    }
+
+    @Override
+    public Figure clone(){
+        Point radiusPoint = new Point(centerPoint.getX() + difX, centerPoint.getY() + difY);
+        return new Ellipse(centerPoint.clone(), radiusPoint, this.fillColor, this.border);
+    }
+
+    @Override
+    public String toString(){
+        return String.format("Elipse [Centro: %s, Radio Mayor: %.2f, Radio Menor: %.2f]", centerPoint, Math.max(difX, difY), Math.min(difX, difY));
+    }
 }
