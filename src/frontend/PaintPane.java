@@ -2,6 +2,7 @@ package src.frontend;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import src.backend.CanvasFigure;
 import src.backend.CanvasState;
 import src.backend.model.*;
@@ -9,12 +10,9 @@ import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import src.backend.model.Border;
 
 import java.util.Optional;
 
@@ -94,6 +92,7 @@ public class PaintPane extends BorderPane{
 	private void initToggleButtons(ToggleButton[] buttons, ToggleGroup group){
 		for(ToggleButton button : buttons){
 			button.setMinWidth(90);
+			button.setPrefWidth(90);// <- evita deformaciones, hay que ver si es necesario.
 			button.setToggleGroup(group);
 			button.setCursor(Cursor.HAND);
 		}
@@ -104,6 +103,8 @@ public class PaintPane extends BorderPane{
 		box.setPadding(new Insets(5));
 		box.setStyle("-fx-background-color: #CCCCCC");
 		box.setPrefWidth(120);
+		box.setFillWidth(false); // <- clave para evitar deformaciones
+		box.setMinHeight(300);// <- evita deformaciones
 		for(Node node : nodes){
 			box.getChildren().add(node);
 			box.getChildren().add(new Separator());
@@ -188,7 +189,13 @@ public class PaintPane extends BorderPane{
 		buttonsTopBox.setAlignment(Pos.CENTER);
 		setTop(buttonsTopBox);
 		setBottom(statusPane);
-		Pane canvasWrapper = new Pane(canvas);
+//		Pane canvasWrapper = new Pane(canvas);
+		//Reemplaze el Pane por StackPane ya que redimensiona a sus hijos correctamente.
+		StackPane canvasWrapper = new StackPane(canvas);
+		canvasWrapper.setMinSize(0, 0);//<-esto lo agregue para que cuando achicas la pantalla no se corran las funcionalidades de los botones
+		//Lo de aca abajo lo agregue para que sea responsive el statusPane.
+		statusPane.setMinHeight(30);
+		setMinSize(600, 400);
 
 		canvas.widthProperty().bind(canvasWrapper.widthProperty());
 		canvas.heightProperty().bind(canvasWrapper.heightProperty());
