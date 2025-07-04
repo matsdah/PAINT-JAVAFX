@@ -1,7 +1,6 @@
 package src.backend.model;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,16 +69,18 @@ public class Ellipse extends Figure{
     @Override
     public List<Figure> widthDivide(int n){
         if (n <= 0){
-            return List.of();
+            return null;
         }
-
         List<Figure> newEllipses = new ArrayList<>();
+        double aspectRatio = this.difX / this.difY;
         double newRadiusX = this.difX / n;
+        double newRadiusY = newRadiusX / aspectRatio;
         double originalLeftX = centerPoint.getX() - this.difX;
+        double centeredY = centerPoint.getY() - this.difY + (this.difY * 2 - newRadiusY * 2) / 2;
 
         for(int i = 0; i < n; i++){
-            Point newCenter = new Point(originalLeftX + newRadiusX + (i * 2 * newRadiusX), centerPoint.getY());
-            Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + this.difY);
+            Point newCenter = new Point(originalLeftX + newRadiusX + (i * 2 * newRadiusX), centeredY + newRadiusY);
+            Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + newRadiusY);
             newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
         }
 
@@ -89,16 +90,18 @@ public class Ellipse extends Figure{
     @Override
     public List<Figure> heightDivide(int n){
         if (n <= 0){
-            return List.of();
+            return null;
         }
-
         List<Figure> newEllipses = new ArrayList<>();
+        double aspectRatio = this.difX / this.difY;
         double newRadiusY = this.difY / n;
+        double newRadiusX = newRadiusY * aspectRatio;
         double originalTopY = centerPoint.getY() - this.difY;
+        double centeredX = centerPoint.getX() - this.difX + (this.difX * 2 - newRadiusX * 2) / 2;
 
         for(int i = 0; i < n; i++){
-            Point newCenter = new Point(centerPoint.getX(), originalTopY + newRadiusY + (i * 2 * newRadiusY));
-            Point newRadiusPoint = new Point(newCenter.getX() + this.difX, newCenter.getY() + newRadiusY);
+            Point newCenter = new Point(centeredX + newRadiusX, originalTopY + newRadiusY + (i * 2 * newRadiusY));
+            Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + newRadiusY);
             newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
         }
 

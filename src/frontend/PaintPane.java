@@ -13,9 +13,9 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
 import src.backend.model.Border;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
 import static javax.swing.JOptionPane.showInputDialog;
 
 public class PaintPane extends BorderPane{
@@ -25,7 +25,7 @@ public class PaintPane extends BorderPane{
 	private final GraphicsContext gc = canvas.getGraphicsContext2D();
 	private static final Color DEFAULT_FILL_COLOR = Color.YELLOW;
 
-	/* Botones Barra Izquierda */
+	/* Botones de barra izquierda */
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
 	private final ToggleButton rectangleButton = new ToggleButton("Rectángulo");
 	private final ToggleButton circleButton = new ToggleButton("Círculo");
@@ -36,13 +36,13 @@ public class PaintPane extends BorderPane{
 	private final Button copyFormatButton = new Button("Copiar Fmt.");
 	private final Button pasteFormatButton = new Button("Pegar Fmt.");
 
-	/* Botones Barra Derecha para Operaciones */
+	/* Botones de barra derecha para operaciones */
 	private final ToggleButton divideByLengthButton = new ToggleButton("Dividir An.");
 	private final ToggleButton divideByHeightButton = new ToggleButton("Dividir Al.");
 	private final ToggleButton multiplyButton = new ToggleButton("Multiplicar");
 	private final ToggleButton moveToButton = new ToggleButton("Trasladar");
 
-	/* Barra Superior para Efectos */
+	/* Barra superior para efectos */
 	private final Label effectsLabel = createTitleLabel("Efectos:");
 	private final CheckBox lightenCheckbox = new CheckBox("Aclaramiento");
 	private final CheckBox darkenCheckbox = new CheckBox("Oscurecimiento");
@@ -51,7 +51,7 @@ public class PaintPane extends BorderPane{
 	private final HBox effectsRow = buildCheckboxRow(lightenCheckbox, darkenCheckbox, mirrorHCheckbox, mirrorVCheckbox);
 
 	/* Selector de color de relleno (ColorPicker) */
-	private ColorPicker fillColorPicker = new ColorPicker(DEFAULT_FILL_COLOR);
+	private final ColorPicker fillColorPicker = new ColorPicker(DEFAULT_FILL_COLOR);
 
 	/* Dibujar una figura */
 	private Point startPoint;
@@ -62,9 +62,7 @@ public class PaintPane extends BorderPane{
 	/* Barra de estado */
 	private final StatusPane statusPane;
 
-	/*
-	 * Portapapeles para guardar el formato copiado de la figura.
-	 */
+	/* Portapapeles para guardar el formato copiado de la figura */
 	private static class FormatClipboard{
 		static Color fillColor;
 		static Border borderStyle;
@@ -92,7 +90,7 @@ public class PaintPane extends BorderPane{
 	private void initToggleButtons(ToggleButton[] buttons, ToggleGroup group){
 		for(ToggleButton button : buttons){
 			button.setMinWidth(90);
-			button.setPrefWidth(90);// <- evita deformaciones, hay que ver si es necesario.
+			button.setPrefWidth(90);
 			button.setToggleGroup(group);
 			button.setCursor(Cursor.HAND);
 		}
@@ -103,8 +101,8 @@ public class PaintPane extends BorderPane{
 		box.setPadding(new Insets(5));
 		box.setStyle("-fx-background-color: #CCCCCC");
 		box.setPrefWidth(120);
-		box.setFillWidth(false); // <- clave para evitar deformaciones
-		box.setMinHeight(300);// <- evita deformaciones
+		box.setFillWidth(false);
+		box.setMinHeight(300);
 		for(Node node : nodes){
 			box.getChildren().add(node);
 			box.getChildren().add(new Separator());
@@ -141,26 +139,14 @@ public class PaintPane extends BorderPane{
 
 		fillColorPicker.setMinWidth(90);
 
-		VBox buttonsBoxLeft = buildVBox(
-				selectionButton,
+		VBox buttonsBoxLeft = buildVBox(selectionButton,
 				new VBox(rectangleButton, circleButton, squareButton, ellipseButton, deleteButton),
-				borderStyleChooser,
-				fillColorPicker,
-				copyFormatButton,
-				pasteFormatButton
-		);
+				borderStyleChooser, fillColorPicker, copyFormatButton, pasteFormatButton);
 
-		VBox buttonsBoxRight = buildVBox(
-				createTitleLabel("Operaciones:"),
-				new VBox(divideByLengthButton, divideByHeightButton),
-				multiplyButton,
-				moveToButton
-		);
+		VBox buttonsBoxRight = buildVBox(createTitleLabel("Operaciones:"), new VBox(divideByLengthButton, divideByHeightButton),
+				multiplyButton, moveToButton);
 
-		HBox buttonsTopBox = buildHBox(
-				effectsLabel,
-				effectsRow
-		);
+		HBox buttonsTopBox = buildHBox(effectsLabel, effectsRow);
 
 		canvas.setOnMousePressed(this::onMousePressed);
 		canvas.setOnMouseReleased(this::onMouseRelease);
@@ -189,11 +175,9 @@ public class PaintPane extends BorderPane{
 		buttonsTopBox.setAlignment(Pos.CENTER);
 		setTop(buttonsTopBox);
 		setBottom(statusPane);
-//		Pane canvasWrapper = new Pane(canvas);
-		//Reemplaze el Pane por StackPane ya que redimensiona a sus hijos correctamente.
-		StackPane canvasWrapper = new StackPane(canvas);
-		canvasWrapper.setMinSize(0, 0);//<-esto lo agregue para que cuando achicas la pantalla no se corran las funcionalidades de los botones
-		//Lo de aca abajo lo agregue para que sea responsive el statusPane.
+		StackPane canvasWrapper = new StackPane(canvas);	/* StackPane ya que redimensiona a sus hijos correctamente */
+		canvasWrapper.setMinSize(0, 0);				/* Para que no se corran las funcionalidades de los botones */
+		/* Para que sea responsive el statusPane */
 		statusPane.setMinHeight(30);
 		setMinSize(600, 400);
 
@@ -204,7 +188,15 @@ public class PaintPane extends BorderPane{
 		setCenter(canvasWrapper);
 	}
 
-	// Faltarian los try catch para cada divide, multiply y moveTo!
+	/* Metodo para lanzar un mensaje de error al usuario */
+	private void errorDialog(String s){
+		Alert alert = new Alert(Alert.AlertType.ERROR);
+		alert.setTitle("¡ERROR!");
+		alert.setHeaderText(null);
+		alert.setContentText(s);
+		alert.showAndWait();
+	}
+
 	private void onDivideWidth(){
 		if(selectedFigure == null){
 			statusPane.updateStatus("Seleccione una figura...");
@@ -212,11 +204,18 @@ public class PaintPane extends BorderPane{
 		}
 		Optional<String> result = showInputDialog("Dividir a lo ancho", "Ingrese cant. de divisiones:").describeConstable();
 		result.ifPresent(nStr -> {
-			int n = Integer.parseInt(nStr);
-			if (n <= 0) throw new NumberFormatException();
-			canvasState.widthDivide(selectedFigure, n);
-			selectedFigure = null;
-			redrawCanvas();
+			try{
+				int n = Integer.parseInt(nStr);
+				if(n <= 0){
+					throw new NumberFormatException("El número debe ser un entero positivo...");
+				}
+				canvasState.widthDivide(selectedFigure, n);
+				selectedFigure = null;
+				redrawCanvas();
+			}catch(NumberFormatException e){
+				errorDialog("¡Ingrese un número entero positivo!");
+				statusPane.updateStatus("Entrada inválida.");
+			}
 		});
 	}
 
@@ -225,14 +224,21 @@ public class PaintPane extends BorderPane{
 			statusPane.updateStatus("Seleccione una figura...");
 			return;
 		}
-		Optional<String> result = showInputDialog("Dividir a lo alto", "Ingrese cant. de divisiones:").describeConstable();
+		Optional<String> result = showInputDialog("Dividir a lo alto", "Ingrese cantidad de divisiones...").describeConstable();
 		result.ifPresent(nStr -> {
+			try{
 				int n = Integer.parseInt(nStr);
-				if (n <= 0) throw new NumberFormatException();
+				if (n <= 0){
+					throw new NumberFormatException("El número debe ser un entero positivo...");
+				}
 				canvasState.heightDivide(selectedFigure, n);
 				selectedFigure = null;
 				redrawCanvas();
-			});
+			}catch(NumberFormatException e){
+				errorDialog("¡Ingrese un número entero positivo!");
+				statusPane.updateStatus("Entrada inválida.");
+			}
+		});
 	}
 
 	private void onMultiply(){
@@ -240,12 +246,19 @@ public class PaintPane extends BorderPane{
 			statusPane.updateStatus("Seleccione una figura...");
 			return;
 		}
-		Optional<String> result = showInputDialog("Multiplicar figura", "Ingrese la cant. de copias:").describeConstable();
+		Optional<String> result = showInputDialog("Multiplicar figura", "Ingrese la cantidad de copias...").describeConstable();
 		result.ifPresent(nStr -> {
-			int n = Integer.parseInt(nStr);
-			if (n <= 1) throw new NumberFormatException();
-			canvasState.multiply(selectedFigure, n);
-			redrawCanvas();
+			try{
+				int n = Integer.parseInt(nStr);
+				if(n <= 1){
+					throw new NumberFormatException("El número debe ser mayor a 1...");
+				}
+				canvasState.multiply(selectedFigure, n);
+				redrawCanvas();
+			}catch(NumberFormatException e){
+				errorDialog("¡Ingrese un número entero positivo!");
+				statusPane.updateStatus("Entrada inválida.");
+			}
 		});
 	}
 
@@ -254,14 +267,21 @@ public class PaintPane extends BorderPane{
 			statusPane.updateStatus("Seleccione una figura...");
 			return;
 		}
-		Optional<String> result = showInputDialog("Trasladar figura", "Ingrese la coord. [X, Y]:").describeConstable();
+		Optional<String> result = showInputDialog("Trasladar figura", "Ingrese las coordenadas [X, Y]...").describeConstable();
 		result.ifPresent(coords -> {
-				String[] parts = coords.split(","); // [cite: 325]
-				if (parts.length != 2) throw new NumberFormatException();
+			try{
+				String[] parts = coords.split(",");
+				if (parts.length != 2){
+					throw new NumberFormatException();
+				}
 				double x = Double.parseDouble(parts[0].trim());
 				double y = Double.parseDouble(parts[1].trim());
 				canvasState.moveTo(selectedFigure, new Point(x, y));
 				redrawCanvas();
+			}catch(NumberFormatException e){
+				errorDialog("¡Ingrese coordenadas [X, Y]!");
+				statusPane.updateStatus("Entrada inválida.");
+			}
 		});
 	}
 
@@ -305,9 +325,9 @@ public class PaintPane extends BorderPane{
 			}
 			if(found){
 				statusPane.updateStatus(label.toString());
-			} else{
+			}else{
 				selectedFigure = null;
-				statusPane.updateStatus("Ninguna figura encontrada");
+				statusPane.updateStatus("¡Ninguna figura encontrada!");
 			}
 			redrawCanvas();
 		}
@@ -320,12 +340,28 @@ public class PaintPane extends BorderPane{
 	private void onMousePressed(MouseEvent event){
 		startPoint = new Point(event.getX(), event.getY());
 		if(selectionButton.isSelected()){
-			selectedFigure = canvasState.selectFigureAtPoint(startPoint);
-			if(selectedFigure != null){
+			List<CanvasFigure> figuresList = new ArrayList<>();
+			for(CanvasFigure fig : canvasState){
+				figuresList.add(fig);
+			}
+
+			CanvasFigure figureUnderMouse = null;
+			for(int i = figuresList.size() - 1; i >= 0; i--){
+				CanvasFigure figure = figuresList.get(i);
+				if(figure.contains(startPoint)){
+					figureUnderMouse = figure;
+					break;
+				}
+			}
+
+			if(figureUnderMouse != null){
+				selectedFigure = figureUnderMouse;
 				statusPane.updateStatus("Arrastrando: " + selectedFigure);
 				updateEffectCheckboxes(selectedFigure);
+				redrawCanvas();
+			}else if(selectedFigure != null){
+				statusPane.updateStatus("Arrastrando: " + selectedFigure);
 			}
-			redrawCanvas();
 		}
 	}
 
@@ -343,6 +379,7 @@ public class PaintPane extends BorderPane{
 		Color actualColor = fillColorPicker.getValue();
 		Border actualBorderStyle = borderStyleChooser.getValue();
 
+		/* Verifico que figura se quiere crear en base al boton seleccionado */
 		if(rectangleButton.isSelected()){
 			newFigure = new Rectangle(startPoint, endPoint, actualColor, actualBorderStyle);
 		} else if(circleButton.isSelected()){
@@ -352,7 +389,6 @@ public class PaintPane extends BorderPane{
 		} else if(ellipseButton.isSelected()){
 			newFigure = new Ellipse(startPoint, endPoint, actualColor, actualBorderStyle);
 		}
-
 		if(newFigure != null){
 			canvasState.addFigure(newFigure, lightenCheckbox.isSelected(), darkenCheckbox.isSelected(), mirrorHCheckbox.isSelected(), mirrorVCheckbox.isSelected());
 		}
@@ -361,8 +397,8 @@ public class PaintPane extends BorderPane{
 	}
 
 	/*
-	 * Se muestra la informacion de la figura si el cursor pasa por encima de alguna
-	 * dentro del lienzo.
+	 * Se muestra la informacion de la figura si el cursor pasa
+	 * por encima de alguna dentro del lienzo.
 	 */
 	private void onMouseMoved(MouseEvent event){
 		Point eventPoint = new Point(event.getX(), event.getY());
@@ -390,6 +426,9 @@ public class PaintPane extends BorderPane{
 		if(selectedFigure != null){
 			canvasState.deleteFigure(selectedFigure);
 			selectedFigure = null;
+			redrawCanvas();
+			selectionButton.setSelected(true);
+			statusPane.updateStatus("Figura eliminada.");
 		}
 	}
 
@@ -399,7 +438,7 @@ public class PaintPane extends BorderPane{
 			FormatClipboard.borderStyle = selectedFigure.getBorder();
 			pasteFormatButton.setDisable(false);
 			statusPane.updateStatus("Formato copiado: " + selectedFigure);
-		} else {
+		}else{
 			statusPane.updateStatus("Seleccione una figura para copiar su formato...");
 		}
 	}
@@ -410,7 +449,7 @@ public class PaintPane extends BorderPane{
 			selectedFigure.setBorder(FormatClipboard.borderStyle);
 			redrawCanvas();
 			statusPane.updateStatus("Formato pegado en: " + selectedFigure);
-		} else {
+		}else{
 			statusPane.updateStatus("Seleccione una figura para pegar el formato...");
 		}
 	}

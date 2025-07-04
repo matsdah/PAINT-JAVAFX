@@ -6,9 +6,9 @@ import java.util.List;
 
 public class CanvasState implements Iterable<CanvasFigure>{
 
-    private final List<CanvasFigure> figures = new ArrayList<>();        /* Array de las figuras del lienzo */
-    private CanvasFigure selectedFigure;                                 /* Figura seleccionada dentro del lienzo */
-    private final static double DEFAULT_OFFSET_MULTIPLy = 10.0;
+    private final List<CanvasFigure> figures = new ArrayList<>();       /* Array de las figuras del lienzo */
+    private CanvasFigure selectedFigure;                                /* Figura seleccionada dentro del lienzo */
+    private final static double DEFAULT_OFFSET_MULTIPLy = 10.0;         /* Diferencia para pegar la figura al multiplicarla */
 
     /*
      * Metodo que le asigna al atributo @selectedFigure la figura donde
@@ -37,6 +37,10 @@ public class CanvasState implements Iterable<CanvasFigure>{
         figures.remove(figure);
     }
 
+    /*
+     * Divide la figura seleccionada a lo ancho en N figuras.
+     * Elimina la figura original y crea N nuevas.
+     */
     public void widthDivide(CanvasFigure figure, int n){
         if(figure == null || n <= 0){
             return;
@@ -49,6 +53,10 @@ public class CanvasState implements Iterable<CanvasFigure>{
         }
     }
 
+    /*
+     * Divide la figura seleccionada a lo alto en N figuras.
+     * Elimina la figura original y crea     N nuevas.
+     */
     public void heightDivide(CanvasFigure figure, int n){
         if(figure == null || n <= 0){
             return;
@@ -61,6 +69,10 @@ public class CanvasState implements Iterable<CanvasFigure>{
         }
     }
 
+    /*
+     * Multiplica la figura seleccionada por N.
+     * Aparece multiplicada con un offset en el lienzo.
+     */
     public void multiply(CanvasFigure figure, int n){
         if (figure == null || n <= 1){
             return;
@@ -72,6 +84,9 @@ public class CanvasState implements Iterable<CanvasFigure>{
         }
     }
 
+    /*
+     * Traslada una figura a una coordenada [X, Y] dentro del lienzo.
+     */
     public void moveTo(CanvasFigure figure, Point target){
         if(figure == null || target == null){
             return;

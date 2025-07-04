@@ -9,11 +9,17 @@ public class Rectangle extends Figure{
     private final Point topLeft, bottomRight;
 
     public Rectangle(Point corner1, Point corner2, Color fillColor, Border border){
+        Rectangle.checkPoints(corner1, corner2);
+        super(new Point[]{corner1, corner2}, fillColor, border);
+        this.topLeft = corner1;
+        this.bottomRight = corner2;
+    }
+
+    protected static void checkPoints(Point corner1, Point corner2){
         Point auxTL = new Point(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()));
         Point auxBR = new Point(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()));
-        super(new Point[]{auxTL, auxBR}, fillColor, border);
-        this.topLeft = auxTL;
-        this.bottomRight = auxBR;
+        corner1.moveTo(auxTL.getX(), auxTL.getY());
+        corner2.moveTo(auxBR.getX(), auxBR.getY());
     }
 
     @Override
@@ -57,11 +63,6 @@ public class Rectangle extends Figure{
         gc.restore();
     }
 
-    @Override
-    public String toString(){
-        return String.format("Rectángulo [%s , %s]", topLeft, bottomRight);
-    }
-
     public Point getTopLeft(){
         return topLeft;
     }
@@ -71,16 +72,14 @@ public class Rectangle extends Figure{
     }
 
     /*
-     * Funcion privada que calcula el ancho de un rectangulo
-     * dados sus dos puntos espaciales.
+     * Calcula el ancho de un rectangulo dados sus dos puntos en el lienzo.
      */
     private double getWidth(){
         return Math.abs(bottomRight.getX() - topLeft.getX());
     }
 
     /*
-     * Funcion privada que calcula el alto de un rectangulo
-     * dados sus dos puntos espaciales.
+     * Calcula el alto de un rectangulo dados sus dos puntos en el lienzo.
      */
     private double getHeight(){
         return Math.abs(bottomRight.getY() - topLeft.getY());
@@ -94,32 +93,47 @@ public class Rectangle extends Figure{
     @Override
     public List<Figure> widthDivide(int n){
         if(n <= 0){
-            return List.of();
+            return null;
         }
-
         List<Figure> newRects = new ArrayList<>();
-        double newWidth = getWidth() / n;
+        double originalWidth = getWidth();
+        double originalHeight = getHeight();
+        double aspectRatio = originalWidth / originalHeight;
+        double newWidth = originalWidth / n;
+        double newHeight = newWidth / aspectRatio;
+        double centeredY = topLeft.getY() + (originalHeight - newHeight) / 2;
+
         for(int i = 0; i < n; i++){
-            Point newTopLeft = new Point(topLeft.getX() + i * newWidth, topLeft.getY());
-            Point newBottomRight = new Point(topLeft.getX() + (i + 1) * newWidth, bottomRight.getY());
-            newRects.add(new Rectangle(newTopLeft, newBottomRight, this.fillColor, this.border));
+            Point newTopLeft = new Point(topLeft.getX() + i * newWidth, centeredY);
+            Point newBottomRight = new Point(newTopLeft.getX() + newWidth, newTopLeft.getY() + newHeight);
+            newRects.add(new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder()));
         }
         return newRects;
     }
 
     @Override
     public List<Figure> heightDivide(int n){
-        if (n <= 0){
-            return List.of();
+        if(n <= 0){
+            return null;
         }
-
         List<Figure> newRects = new ArrayList<>();
-        double newHeight = getHeight() / n;
+        double originalWidth = getWidth();
+        double originalHeight = getHeight();
+        double aspectRatio = originalWidth / originalHeight;
+        double newHeight = originalHeight / n;
+        double newWidth = newHeight * aspectRatio;
+        double centeredX = topLeft.getX() + (originalWidth - newWidth) / 2;
+
         for(int i = 0; i < n; i++){
-            Point newTopLeft = new Point(topLeft.getX(), topLeft.getY() + i * newHeight);
-            Point newBottomRight = new Point(bottomRight.getX(), topLeft.getY() + (i + 1) * newHeight);
-            newRects.add(new Rectangle(newTopLeft, newBottomRight, this.fillColor, this.border));
+            Point newTopLeft = new Point(centeredX, topLeft.getY() + i * newHeight);
+            Point newBottomRight = new Point(newTopLeft.getX() + newWidth, newTopLeft.getY() + newHeight);
+            newRects.add(new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder()));
         }
         return newRects;
+    }
+
+    @Override
+    public String toString(){
+        return String.format("Rectángulo [%s , %s]", topLeft, bottomRight);
     }
 }

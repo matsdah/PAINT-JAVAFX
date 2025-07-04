@@ -1,5 +1,4 @@
 package src.backend;
-
 import javafx.scene.canvas.GraphicsContext;
 
 @FunctionalInterface

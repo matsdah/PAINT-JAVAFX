@@ -2,11 +2,17 @@ package src.backend;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import src.backend.model.*;
-import java.util.ArrayList;
-import java.util.List;
+import src.backend.model.effects.EffectType;
+import src.backend.model.effects.FigureEffect;
+
+import java.util.*;
 
 public class CanvasFigure implements Movable, Drawable{
     private final Figure fig;           /* Figura principal */
+
+/*
+    private final EnumSet<EffectType> effects;
+*/
 
     /* Efectos de la figura */
     private boolean lightenEffect;
@@ -21,6 +27,25 @@ public class CanvasFigure implements Movable, Drawable{
         this.horizontalMirrorEffect = hMirror;
         this.verticalMirrorEffect = vMirror;
     }
+
+/*
+    public CanvasFigure(Figure fig, EnumSet<EffectType> effects){
+        this.fig = fig;
+        this.effects = new HashSet<>(effects);
+    }
+*/
+/*
+
+    public boolean hasEffect(EffectType effect){
+        return effects.contains(effect);
+    }
+
+    public void addEffect(EffectType eff){
+        effects.add(eff);
+    }
+
+*/
+
 
     /* Setters y getters para los efectos de la figura */
     public boolean hasLightenEffect(){
@@ -86,6 +111,8 @@ public class CanvasFigure implements Movable, Drawable{
     @Override
     public void draw(GraphicsContext gc, boolean isSelected){
         fig.draw(gc, isSelected);
+
+
         if(lightenEffect){
             gc.save();
             gc.setFill(Color.rgb(255, 255, 255, 0.7));
