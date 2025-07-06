@@ -1,10 +1,10 @@
 package src.backend.model.effects;
-
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import src.backend.model.Border;
 import src.backend.model.Figure;
 
-public enum EffectType {
+public enum EffectType{
     LIGHTENED("Aclaramiento"){
         @Override
         public void apply(GraphicsContext gc, Figure fig){
@@ -13,7 +13,8 @@ public enum EffectType {
             fig.drawFill(gc);
             gc.restore();
         }
-    }, DARKENED("Oscurecimiento"){
+    },
+    DARKENED("Oscurecimiento"){
         @Override
         public void apply(GraphicsContext gc, Figure fig){
             gc.save();
@@ -21,22 +22,33 @@ public enum EffectType {
             fig.drawFill(gc);
             gc.restore();
         }
-    }, VERTICAL_MIRROR("Espejo Vertical"){
-        @Override
-        public void apply(GraphicsContext gc, Figure fig) {
-            fig.createVerticalMirror().draw(gc, false);
-        }
-    }, HORIZONTAL_MIRROR("Espejo Horizontal"){
+    },
+    HORIZONTAL_MIRROR("Espejo Horizontal"){
         @Override
         public void apply(GraphicsContext gc, Figure fig){
-            fig.createHorizontalMirror().draw(gc, false);
+            Figure mirror = fig.createHorizontalMirror();
+            mirror.setBorder(Border.NORMAL);
+            mirror.draw(gc, false);
+        }
+    },
+    VERTICAL_MIRROR("Espejo Vertical"){
+        @Override
+        public void apply(GraphicsContext gc, Figure fig){
+            Figure mirror = fig.createVerticalMirror();
+            mirror.setBorder(Border.NORMAL);
+            mirror.draw(gc, false);
         }
     };
 
-    private EffectType(String effName){
-        this.EffectName = effName;
+    private final String effectName;
+
+    EffectType(String effName){
+        this.effectName = effName;
     }
 
-    public final String EffectName;
+    public String getEffectName(){
+        return effectName;
+    }
+
     public abstract void apply(GraphicsContext gc, Figure fig);
 }

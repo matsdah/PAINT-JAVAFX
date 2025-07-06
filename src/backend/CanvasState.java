@@ -1,6 +1,7 @@
 package src.backend;
 import src.backend.model.*;
 import src.backend.model.Point;
+import src.backend.model.effects.EffectType;
 import java.util.*;
 import java.util.List;
 
@@ -29,8 +30,19 @@ public class CanvasState implements Iterable<CanvasFigure>{
         return selectedFigure;
     }
 
+    private EnumSet<EffectType> checkEffects(boolean lightened, boolean darkened, boolean hMirror, boolean vMirror){
+        EnumSet<EffectType> effects = EnumSet.noneOf(EffectType.class);
+        List<Boolean> aux = List.of(lightened, darkened, hMirror, vMirror);
+        for(EffectType effect : EffectType.values()){
+            if(aux.get(effect.ordinal())){
+                effects.add(effect);
+            }
+        }
+        return effects;
+    }
+
     public void addFigure(Figure figure, boolean lighten, boolean darken, boolean hMirror, boolean vMirror){
-        figures.add(new CanvasFigure(figure, lighten, darken, hMirror, vMirror));
+        figures.add(new CanvasFigure(figure, checkEffects(lighten, darken, hMirror, vMirror)));
     }
 
     public void deleteFigure(CanvasFigure figure){

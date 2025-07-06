@@ -13,9 +13,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
 import src.backend.model.Border;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import src.backend.model.effects.EffectType;
+import java.util.*;
 import static javax.swing.JOptionPane.showInputDialog;
 
 public class PaintPane extends BorderPane{
@@ -49,6 +48,23 @@ public class PaintPane extends BorderPane{
 	private final CheckBox mirrorHCheckbox = new CheckBox("Espejo Horizontal");
 	private final CheckBox mirrorVCheckbox = new CheckBox("Espejo Vertical");
 	private final HBox effectsRow = buildCheckboxRow(lightenCheckbox, darkenCheckbox, mirrorHCheckbox, mirrorVCheckbox);
+
+	private final Map<CheckBox, EffectType> effectMap = new HashMap<>();
+	private final Map<ToggleButton, FigureFactory> figureFactories = new HashMap<>();
+
+	private void initializeFigureFactories(){
+		figureFactories.put(rectangleButton, Rectangle::new);
+		figureFactories.put(circleButton, Circle::new);
+		figureFactories.put(squareButton, Square::new);
+		figureFactories.put(ellipseButton, Ellipse::new);
+	}
+
+	private void initializeEffectMap(){
+		effectMap.put(lightenCheckbox, EffectType.LIGHTENED);
+		effectMap.put(darkenCheckbox, EffectType.DARKENED);
+		effectMap.put(mirrorHCheckbox, EffectType.HORIZONTAL_MIRROR);
+		effectMap.put(mirrorVCheckbox, EffectType.VERTICAL_MIRROR);
+	}
 
 	/* Selector de color de relleno (ColorPicker) */
 	private final ColorPicker fillColorPicker = new ColorPicker(DEFAULT_FILL_COLOR);
@@ -120,6 +136,9 @@ public class PaintPane extends BorderPane{
 
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
+
+		initializeEffectMap();
+		initializeFigureFactories();
 
 		ToggleButton[] toolsLeft = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
 		ToggleButton[] toolsRight = {divideByLengthButton, divideByHeightButton, multiplyButton, moveToButton};
@@ -197,9 +216,16 @@ public class PaintPane extends BorderPane{
 		alert.showAndWait();
 	}
 
-	private void onDivideWidth(){
+	private boolean checkForSelectedFigure(){
 		if(selectedFigure == null){
 			statusPane.updateStatus("Seleccione una figura...");
+			return false;
+		}
+		return true;
+	}
+
+	private void onDivideWidth(){
+		if(!checkForSelectedFigure()){
 			return;
 		}
 		Optional<String> result = showInputDialog("Dividir a lo ancho", "Ingrese cant. de divisiones:").describeConstable();
@@ -220,8 +246,7 @@ public class PaintPane extends BorderPane{
 	}
 
 	private void onDivideHeight(){
-		if (selectedFigure == null) {
-			statusPane.updateStatus("Seleccione una figura...");
+		if(!checkForSelectedFigure()){
 			return;
 		}
 		Optional<String> result = showInputDialog("Dividir a lo alto", "Ingrese cantidad de divisiones...").describeConstable();
@@ -242,8 +267,7 @@ public class PaintPane extends BorderPane{
 	}
 
 	private void onMultiply(){
-		if(selectedFigure == null){
-			statusPane.updateStatus("Seleccione una figura...");
+		if(!checkForSelectedFigure()){
 			return;
 		}
 		Optional<String> result = showInputDialog("Multiplicar figura", "Ingrese la cantidad de copias...").describeConstable();
@@ -263,8 +287,7 @@ public class PaintPane extends BorderPane{
 	}
 
 	private void onMoveTo(){
-		if(selectedFigure == null){
-			statusPane.updateStatus("Seleccione una figura...");
+		if(!checkForSelectedFigure()){
 			return;
 		}
 		Optional<String> result = showInputDialog("Trasladar figura", "Ingrese las coordenadas [X, Y]...").describeConstable();
@@ -290,18 +313,20 @@ public class PaintPane extends BorderPane{
 	 * de aclarecimiento, oscurecimiento y espejos.
  	*/
 	private void updateEffectCheckboxes(CanvasFigure figure){
-		lightenCheckbox.setSelected(figure.hasLightenEffect());
-		darkenCheckbox.setSelected(figure.hasDarkenEffect());
-		mirrorHCheckbox.setSelected(figure.hasHorizontalMirrorEffect());
-		mirrorVCheckbox.setSelected(figure.hasVerticalMirrorEffect());
+		for (Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()){
+			entry.getKey().setSelected(figure.hasEffect(entry.getValue()));
+		}
 	}
 
 	private void onEffectChanged(){
 		if(selectedFigure != null){
-			selectedFigure.setLightenEffect(lightenCheckbox.isSelected());
-			selectedFigure.setDarkenEffect(darkenCheckbox.isSelected());
-			selectedFigure.setHorizontalMirrorEffect(mirrorHCheckbox.isSelected());
-			selectedFigure.setVerticalMirrorEffect(mirrorVCheckbox.isSelected());
+			for(Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()) {
+				if(entry.getKey().isSelected()){
+					selectedFigure.addEffect(entry.getValue());
+				}else{
+					selectedFigure.removeEffect(entry.getValue());
+				}
+			}
 			redrawCanvas();
 		}
 	}
@@ -325,6 +350,8 @@ public class PaintPane extends BorderPane{
 			}
 			if(found){
 				statusPane.updateStatus(label.toString());
+				fillColorPicker.setValue(selectedFigure.getFillColor());
+				borderStyleChooser.setValue(selectedFigure.getBorder());
 			}else{
 				selectedFigure = null;
 				statusPane.updateStatus("¡Ninguna figura encontrada!");
@@ -371,24 +398,24 @@ public class PaintPane extends BorderPane{
 	 */
 	private void onMouseRelease(MouseEvent event){
 		Point endPoint = new Point(event.getX(), event.getY());
-        if(selectionButton.isSelected() || startPoint == null){
+		if(selectionButton.isSelected() || startPoint == null){
 			return;
 		}
 
 		Figure newFigure = null;
 		Color actualColor = fillColorPicker.getValue();
 		Border actualBorderStyle = borderStyleChooser.getValue();
+		boolean found = false;
+		Iterator<Map.Entry<ToggleButton, FigureFactory>> it = figureFactories.entrySet().iterator();
 
-		/* Verifico que figura se quiere crear en base al boton seleccionado */
-		if(rectangleButton.isSelected()){
-			newFigure = new Rectangle(startPoint, endPoint, actualColor, actualBorderStyle);
-		} else if(circleButton.isSelected()){
-			newFigure = new Circle(startPoint, endPoint, actualColor, actualBorderStyle);
-		} else if(squareButton.isSelected()){
-			newFigure = new Square(startPoint, endPoint, actualColor, actualBorderStyle);
-		} else if(ellipseButton.isSelected()){
-			newFigure = new Ellipse(startPoint, endPoint, actualColor, actualBorderStyle);
+		while(!found && it.hasNext()){
+			Map.Entry<ToggleButton, FigureFactory> aux = it.next();
+			if(aux.getKey().isSelected()){
+				newFigure = aux.getValue().create(startPoint, endPoint, actualColor, actualBorderStyle);
+				found = true;
+			}
 		}
+
 		if(newFigure != null){
 			canvasState.addFigure(newFigure, lightenCheckbox.isSelected(), darkenCheckbox.isSelected(), mirrorHCheckbox.isSelected(), mirrorVCheckbox.isSelected());
 		}
@@ -433,24 +460,20 @@ public class PaintPane extends BorderPane{
 	}
 
 	private void onCopyFormatButton(){
-		if(selectedFigure != null){
+		if(checkForSelectedFigure()) {
 			FormatClipboard.fillColor = selectedFigure.getFillColor();
 			FormatClipboard.borderStyle = selectedFigure.getBorder();
 			pasteFormatButton.setDisable(false);
 			statusPane.updateStatus("Formato copiado: " + selectedFigure);
-		}else{
-			statusPane.updateStatus("Seleccione una figura para copiar su formato...");
 		}
 	}
 
 	private void onPasteFormatButton(){
-		if(selectedFigure != null){
+		if(checkForSelectedFigure()){
 			selectedFigure.setFillColor(FormatClipboard.fillColor);
 			selectedFigure.setBorder(FormatClipboard.borderStyle);
 			redrawCanvas();
 			statusPane.updateStatus("Formato pegado en: " + selectedFigure);
-		}else{
-			statusPane.updateStatus("Seleccione una figura para pegar el formato...");
 		}
 	}
 
