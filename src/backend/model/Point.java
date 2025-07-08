@@ -6,12 +6,17 @@ public class Point implements Movable{
 
     private double x, y;
 
+    /**
+     * Crea un nuevo punto con las coordenadas [x, y].
+     *
+     * @param x Coordenada horizontal del punto.
+     * @param y Coordenada vertical del punto.
+     */
     public Point(double x, double y){
         this.x = x;
         this.y = y;
     }
 
-    /* Getters */
     public double getX(){
         return x;
     }
@@ -20,6 +25,11 @@ public class Point implements Movable{
         return y;
     }
 
+    /**
+     * Crea una copia del punto actual con las mismas caracteristicas.
+     *
+     * @return     Un nuevo punto con las mismas coordenadas.
+     */
     public Point clone(){
         return new Point(this.x, this.y);
     }
@@ -38,7 +48,7 @@ public class Point implements Movable{
 
     @Override
     public String toString(){
-        return "Pointer at: [%.2f : %.2f]".formatted(x, y);
+        return "Puntero en: [%.2f : %.2f]".formatted(x, y);
     }
 
     @Override

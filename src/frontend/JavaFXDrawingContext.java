@@ -15,7 +15,6 @@ public class JavaFXDrawingContext implements DrawingContext{
         setLineCapMap();
     }
 
-    /* Setters */
     private void setLineCapMap(){
         lineCapMap = Map.of(LineCap.BUTT, StrokeLineCap.BUTT, LineCap.ROUND, StrokeLineCap.ROUND, LineCap.SQUARE, StrokeLineCap.SQUARE);
     }
@@ -45,7 +44,6 @@ public class JavaFXDrawingContext implements DrawingContext{
         gc.setLineDashes(dashes);
     }
 
-    /* Metodos de dibujo de figura y borde */
     @Override
     public void fillRect(double x, double y, double width, double height){
         gc.fillRect(x, y, width, height);

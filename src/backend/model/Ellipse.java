@@ -22,14 +22,16 @@ public class Ellipse extends Figure{
 
     @Override
     public Figure createHorizontalMirror(){
-        Point newCenter = new Point(centerPoint.getX(), centerPoint.getY() + (difY * 2));
-        Point newRadiusPoint = new Point(newCenter.getX() + difX, newCenter.getY() + difY);
-        return new Ellipse(newCenter, newRadiusPoint, getFillColor(), getBorder());
+        return createMirror(new Point(0,1));
     }
 
     @Override
     public Figure createVerticalMirror(){
-        Point newCenter = new Point(centerPoint.getX() + (difX * 2), centerPoint.getY());
+        return createMirror(new Point(1, 0));
+    }
+
+    private Figure createMirror(Point direction){
+        Point newCenter = new Point(centerPoint.getX() + (difX * 2) * direction.getX(), centerPoint.getY() + (difY * 2) * direction.getY());
         Point newRadiusPoint = new Point(newCenter.getX() + difX, newCenter.getY() + difY);
         return new Ellipse(newCenter, newRadiusPoint, getFillColor(), getBorder());
     }
@@ -67,43 +69,33 @@ public class Ellipse extends Figure{
 
     @Override
     public List<Figure> widthDivide(int n){
-        if (n <= 0) {
-            return null;
-        }
-        List<Figure> newEllipses = new ArrayList<>();
         double aspectRatio = this.difX / this.difY;
         double newRadiusX = this.difX / n;
         double newRadiusY = newRadiusX / aspectRatio;
         double originalLeftX = centerPoint.getX() - this.difX;
         double centeredY = centerPoint.getY() - this.difY + (this.difY * 2 - newRadiusY * 2) / 2;
 
-        for (int i = 0; i < n; i++) {
-            Point newCenter = new Point(originalLeftX + newRadiusX + (i * 2 * newRadiusX), centeredY + newRadiusY);
-            Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + newRadiusY);
-            newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
-        }
-
-        return newEllipses;
+        return divide(n, newRadiusY, newRadiusX, new Point(originalLeftX, centeredY), new Point(0,1));
     }
 
     @Override
     public List<Figure> heightDivide(int n){
-        if (n <= 0) {
-            return null;
-        }
-        List<Figure> newEllipses = new ArrayList<>();
         double aspectRatio = this.difX / this.difY;
         double newRadiusY = this.difY / n;
         double newRadiusX = newRadiusY * aspectRatio;
         double originalTopY = centerPoint.getY() - this.difY;
         double centeredX = centerPoint.getX() - this.difX + (this.difX * 2 - newRadiusX * 2) / 2;
 
-        for (int i = 0; i < n; i++) {
-            Point newCenter = new Point(centeredX + newRadiusX, originalTopY + newRadiusY + (i * 2 * newRadiusY));
-            Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + newRadiusY);
-            newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
-        }
+        return divide(n, newRadiusY, newRadiusX, new Point(centeredX, originalTopY), new Point(0,1));
+    }
 
+    protected List<Figure> divide(int n, double newRadiusY, double newRadiusX, Point startPoint, Point direction){
+        List<Figure> newEllipses = new ArrayList<>();
+        for(int i = 0; i < n; i++){
+            Point newCenterPoint = new Point(startPoint.getX() + newRadiusX + (i * 2 * newRadiusX) * direction.getX(),  startPoint.getY() + newRadiusY + (i * 2 * newRadiusY) * direction.getY());
+            Point newRadiusPoint = new Point(newCenterPoint.getX() + newRadiusX, newCenterPoint.getY() + newRadiusY);
+            newEllipses.add(new Ellipse(newCenterPoint, newRadiusPoint, this.fillColor, this.border));
+        }
         return newEllipses;
     }
 

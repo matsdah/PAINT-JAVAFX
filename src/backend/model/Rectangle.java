@@ -1,5 +1,6 @@
 package src.backend.model;
 import src.backend.DrawingContext;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,14 @@ public class Rectangle extends Figure{
 
     private final Point topLeft, bottomRight;
 
+    /**
+     * Crea un nuevo rectángulo teniendo dos puntos topLeft y bottomRight.
+     *
+     * @param corner1       Esquina cualquiera del rectángulo.
+     * @param corner2       Esquina opuesta.
+     * @param fillColor     Color de relleno del rectángulo.
+     * @param border        Estilo de borde del rectángulo.
+     */
     public Rectangle(Point corner1, Point corner2, Color fillColor, Border border){
         Rectangle.checkPoints(corner1, corner2);
         super(new Point[]{corner1, corner2}, fillColor, border);
@@ -14,6 +23,14 @@ public class Rectangle extends Figure{
         this.bottomRight = corner2;
     }
 
+    /**
+     * Valida y ordena los puntos para que corner1 sea la esquina superior izquierda
+     * y corner2 la esquina inferior derecha del rectángulo para dibujarlo correctamente en el lienzo.
+     * Ambas esquinar serán modificada si es necesario.
+     *
+     * @param corner1   Esquina del rectángulo.
+     * @param corner2   Esquina opuesta.
+     */
     protected static void checkPoints(Point corner1, Point corner2){
         Point auxTL = new Point(Math.min(corner1.getX(), corner2.getX()), Math.min(corner1.getY(), corner2.getY()));
         Point auxBR = new Point(Math.max(corner1.getX(), corner2.getX()), Math.max(corner1.getY(), corner2.getY()));
@@ -28,15 +45,24 @@ public class Rectangle extends Figure{
 
     @Override
     public Figure createHorizontalMirror(){
-        Point newTopLeft = new Point(getTopLeft().getX(), getBottomRight().getY());
-        Point newBottomRight = new Point(getBottomRight().getX(), getBottomRight().getY() + getHeight());
-        return new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder());
+        //Point newTopLeft = new Point(getTopLeft().getX(), getBottomRight().getY());
+        //Point newBottomRight = new Point(getBottomRight().getX(), getBottomRight().getY() + getHeight());
+        //return new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder());
+
+        return createMirror(new Point(0,1));
     }
 
     @Override
     public Figure createVerticalMirror(){
-        Point newTopLeft = new Point(getBottomRight().getX(), getTopLeft().getY());
-        Point newBottomRight = new Point(getBottomRight().getX() + getWidth(), getBottomRight().getY());
+        //Point newTopLeft = new Point(getBottomRight().getX(), getTopLeft().getY());
+        //Point newBottomRight = new Point(getBottomRight().getX() + getWidth(), getBottomRight().getY());
+        //return new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder());
+        return createMirror(new Point(1, 0));
+    }
+
+    private Figure createMirror(Point direction){
+        Point newTopLeft = new Point(topLeft.getX() + direction.getX() * getWidth(), topLeft.getY() + direction.getY() * getHeight());
+        Point newBottomRight = new Point(bottomRight.getX() + getWidth() * direction.getX(), bottomRight.getY() + getHeight() * direction.getY());
         return new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder());
     }
 
@@ -62,7 +88,6 @@ public class Rectangle extends Figure{
         dc.restore();
     }
 
-    /* Getters */
     public Point getTopLeft(){
         return topLeft;
     }
@@ -86,44 +111,32 @@ public class Rectangle extends Figure{
 
     @Override
     public List<Figure> widthDivide(int n){
-        if(n <= 0){
-            return null;
-        }
-        List<Figure> newRects = new ArrayList<>();
-        double originalWidth = getWidth();
-        double originalHeight = getHeight();
-        double aspectRatio = originalWidth / originalHeight;
-        double newWidth = originalWidth / n;
+        double aspectRatio = getWidth() / getHeight();
+        double newWidth = getWidth() / n;
         double newHeight = newWidth / aspectRatio;
-        double centeredY = topLeft.getY() + (originalHeight - newHeight) / 2;
+        double centeredY = topLeft.getY() + (getHeight() - newHeight) / 2;
 
-        for(int i = 0; i < n; i++){
-            Point newTopLeft = new Point(topLeft.getX() + i * newWidth, centeredY);
-            Point newBottomRight = new Point(newTopLeft.getX() + newWidth, newTopLeft.getY() + newHeight);
-            newRects.add(new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder()));
-        }
-        return newRects;
+        return divide(n, newHeight, newWidth, new Point(topLeft.getX(), centeredY), new Point(1.0, 0.0));
     }
 
     @Override
     public List<Figure> heightDivide(int n){
-        if(n <= 0){
-            return null;
-        }
-        List<Figure> newRects = new ArrayList<>();
-        double originalWidth = getWidth();
-        double originalHeight = getHeight();
-        double aspectRatio = originalWidth / originalHeight;
-        double newHeight = originalHeight / n;
+        double aspectRatio = getWidth() / getHeight();
+        double newHeight = getHeight() / n;
         double newWidth = newHeight * aspectRatio;
-        double centeredX = topLeft.getX() + (originalWidth - newWidth) / 2;
+        double centeredX = topLeft.getX() + (getWidth() - newWidth) / 2;
 
+        return divide(n, newHeight, newWidth, new Point(centeredX, topLeft.getY()), new Point(0.0, 1.0));
+    }
+
+    protected List<Figure> divide(int n, double newHeight, double newWidth, Point startPoint, Point direction){
+        List<Figure> newFigs = new ArrayList<>();
         for(int i = 0; i < n; i++){
-            Point newTopLeft = new Point(centeredX, topLeft.getY() + i * newHeight);
-            Point newBottomRight = new Point(newTopLeft.getX() + newWidth, newTopLeft.getY() + newHeight);
-            newRects.add(new Rectangle(newTopLeft, newBottomRight, getFillColor(), getBorder()));
+            Point newTopLeft = new Point(startPoint.getX() + i * newWidth * direction.getX(), startPoint.getY() + i * newHeight * direction.getY());
+            Point newBotRight = new Point(newTopLeft.getX() + newWidth, newTopLeft.getY() + newHeight);
+            newFigs.add(new Rectangle(newTopLeft, newBotRight, getFillColor(), getBorder()));
         }
-        return newRects;
+        return newFigs;
     }
 
     @Override

@@ -115,6 +115,13 @@ public class PaintPane extends BorderPane{
 		return label;
 	}
 
+	/**
+	 * Inicializa los componentes de la interfaz, barra de herramientas, botones y manejadores
+	 * de eventos.
+	 *
+	 * @param canvasState 	Gestiona la colección de figuras.
+	 * @param statusPane 	Barra de estado para mostrar mensajes de estado.
+	 */
 	public PaintPane(CanvasState canvasState, StatusPane statusPane){
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
@@ -125,7 +132,10 @@ public class PaintPane extends BorderPane{
 		ToggleButton[] toolsLeft = {selectionButton, rectangleButton, circleButton, squareButton, ellipseButton, deleteButton};
 		ToggleButton[] toolsRight = {divideByLengthButton, divideByHeightButton, multiplyButton, moveToButton};
 
+		/** Inicializa botones de la barra izquierda. */
 		initToggleButtons(toolsLeft, new ToggleGroup());
+
+		/** Inicializa botones de la barra derecha. */
 		initToggleButtons(toolsRight, new ToggleGroup());
 
 		selectionButton.setSelected(true);
@@ -188,6 +198,11 @@ public class PaintPane extends BorderPane{
 		setCenter(canvasWrapper);
 	}
 
+	/**
+	 * Muestra al usuario un diálogo de error con un mensaje parametrizado.
+	 *
+	 * @param s		String de error a mostrar al usuario.
+	 */
 	private void errorDialog(String s){
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("¡ERROR!");
@@ -196,6 +211,11 @@ public class PaintPane extends BorderPane{
 		alert.showAndWait();
 	}
 
+	/**
+	 * Verifica si hay una figura seleccionada, actualizando el statusPane.
+	 *
+	 * @return 		true si hay una figura seleccionada, false sino.
+	 */
 	private boolean checkForSelectedFigure(){
 		if(selectedFigure == null){
 			statusPane.updateStatus("Seleccione una figura...");
@@ -204,6 +224,10 @@ public class PaintPane extends BorderPane{
 		return true;
 	}
 
+	/**
+	 * Divide a lo ancho a la figura seleccionada en n partes enteras.
+	 * Las divisiones mantienen la misma relacion de altura y anchura.
+	 */
 	private void onDivideWidth(){
 		if(!checkForSelectedFigure()){
 			return;
@@ -216,19 +240,20 @@ public class PaintPane extends BorderPane{
 		result.ifPresent(nStr -> {
 			try{
 				int n = Integer.parseInt(nStr);
-				if(n <= 0){
-					throw new NumberFormatException("El número debe ser un entero positivo...");
-				}
 				canvasState.widthDivide(selectedFigure, n);
 				selectedFigure = null;
 				redrawCanvas();
-			}catch(NumberFormatException e){
-				errorDialog("¡Ingrese un número entero positivo!");
+			}catch(IllegalArgumentException e){
+				errorDialog(e.getMessage());
 				statusPane.updateStatus("Entrada inválida.");
 			}
 		});
 	}
 
+	/**
+	 * Divide a lo alto a la figura seleccionada en n partes enteras.
+	 * Las divisiones mantienen la misma relacion de altura y anchura.
+	 */
 	private void onDivideHeight(){
 		if(!checkForSelectedFigure()){
 			return;
@@ -241,19 +266,20 @@ public class PaintPane extends BorderPane{
 		result.ifPresent(nStr -> {
 			try{
 				int n = Integer.parseInt(nStr);
-				if(n <= 0){
-					throw new NumberFormatException("El número debe ser un entero positivo...");
-				}
 				canvasState.heightDivide(selectedFigure, n);
 				selectedFigure = null;
 				redrawCanvas();
-			}catch(NumberFormatException e){
-				errorDialog("¡Ingrese un número entero positivo!");
+			}catch(IllegalArgumentException e){
+				errorDialog(e.getMessage());
 				statusPane.updateStatus("Entrada inválida.");
 			}
 		});
 	}
 
+	/**
+	 * Crea múltiples copias enteras de la figura seleccionada.
+	 * Las copias se desplazan con un offset para evitar un solapamiento.
+	 */
 	private void onMultiply(){
 		if(!checkForSelectedFigure()){
 			return;
@@ -266,18 +292,18 @@ public class PaintPane extends BorderPane{
 		result.ifPresent(nStr -> {
 			try{
 				int n = Integer.parseInt(nStr);
-				if(n <= 1){
-					throw new NumberFormatException("El número debe ser mayor a 1...");
-				}
 				canvasState.multiply(selectedFigure, n);
 				redrawCanvas();
-			}catch(NumberFormatException e){
-				errorDialog("¡Ingrese un número entero positivo!");
+			}catch(IllegalArgumentException e){
+				errorDialog(e.getMessage());
 				statusPane.updateStatus("Entrada inválida.");
 			}
 		});
 	}
 
+	/**
+	 * Traslada la figura seleccionada a las coordenadas [x, y] especificadas.
+	 */
 	private void onMoveTo(){
 		if(!checkForSelectedFigure()){
 			return;
@@ -304,12 +330,20 @@ public class PaintPane extends BorderPane{
 		});
 	}
 
+	/**
+	 * Actualiza el estado de la barra de efectos segun la figura seleccionada.
+	 *
+	 * @param figure 	Figura cuyos efectos se reflejan en la barra.
+	 */
 	private void updateEffectCheckboxes(CanvasFigure figure){
 		for(Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()){
 			entry.getKey().setSelected(figure.hasEffect(entry.getValue()));
 		}
 	}
 
+	/**
+	 * Agrega o elimina efectos de la figura seleccionada según el estado de la barra.
+	 */
 	private void onEffectChanged(){
 		if(selectedFigure != null){
 			for(Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()){
@@ -323,6 +357,11 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Maneja eventos de clickeado dentro del lienzo.
+	 *
+	 * @param event 	Coordenadas del click.
+	 */
 	private void onMouseClicked(MouseEvent event){
 		if(selectionButton.isSelected()){
 			Point eventPoint = new Point(event.getX(), event.getY());
@@ -348,6 +387,11 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Maneja eventos de presión, iniciando el dibujo de una figura.
+	 *
+	 * @param event 	Coordenadas del click presionado.
+	 */
 	private void onMousePressed(MouseEvent event){
 		startPoint = new Point(event.getX(), event.getY());
 		if(selectionButton.isSelected()){
@@ -378,6 +422,11 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Maneja eventos de liberación del click, creando una nueva figura.
+	 *
+	 * @param event 	Coordenadas de donde se libera el click.
+	 */
 	private void onMouseRelease(MouseEvent event){
 		Point endPoint = new Point(event.getX(), event.getY());
 		if(selectionButton.isSelected() || startPoint == null){
@@ -407,12 +456,23 @@ public class PaintPane extends BorderPane{
 		redrawCanvas();
 	}
 
+	/**
+	 * Maneja el movimiento sobre el lienzo, actualizando el statusPane
+	 * con coordenadas e información de la figura.
+	 *
+	 * @param event 	Evento de ratón con las coordenadas del movimiento.
+	 */
 	private void onMouseMoved(MouseEvent event){
 		Point eventPoint = new Point(event.getX(), event.getY());
 		CanvasFigure topFigure = canvasState.selectFigureAtPoint(eventPoint);
 		statusPane.updateStatus(topFigure == null ? eventPoint.toString() : topFigure.toString());
 	}
 
+	/**
+	 * Maneja eventos de arrastre sobre el lienzo, moviendo la figura seleccionada.
+	 *
+	 * @param event 	Coordenadas del arrastre.
+	 */
 	private void onMouseDragged(MouseEvent event){
 		if(selectionButton.isSelected() && selectedFigure != null && startPoint != null){
 			Point eventPoint = new Point(event.getX(), event.getY());
@@ -425,6 +485,9 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Elimina la figura seleccionada del lienzo.
+	 */
 	private void onDeleteButton(){
 		if(selectedFigure != null){
 			canvasState.deleteFigure(selectedFigure);
@@ -435,6 +498,9 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Copia el color de relleno y estilo de borde de la figura seleccionada.
+	 */
 	private void onCopyFormatButton(){
 		if(checkForSelectedFigure()){
 			FormatClipboard.fillColor = selectedFigure.getFillColor();
@@ -444,6 +510,9 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Pega el color de relleno y estilo de borde a la figura seleccionada.
+	 */
 	private void onPasteFormatButton(){
 		if(checkForSelectedFigure()){
 			selectedFigure.setFillColor(FormatClipboard.fillColor);
@@ -462,10 +531,20 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
+	/**
+	 * Verifica si un punto esta sobre la figura especificada.
+	 *
+	 * @param figure 		La figura a verificar.
+	 * @param eventPoint 	El punto deseado.
+	 * @return 				true si el punto esta sobre la figura, false sino.
+	 */
 	private boolean figureBelongs(CanvasFigure figure, Point eventPoint){
 		return figure.contains(eventPoint);
 	}
 
+	/**
+	 * Redibuja las figuras del lienzo y le asigna un borde rojo a la figura seleccionada.
+	 */
 	private void redrawCanvas(){
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		for(CanvasFigure figure : canvasState){

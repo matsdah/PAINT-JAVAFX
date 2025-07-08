@@ -1,6 +1,10 @@
 package src.backend.model;
 import src.backend.DrawingContext;
 
+/*
+ ** Enum que representa el tipo de borde de la figura, ya sea
+ ** 'Normal', 'Pixelado', 'Punteado Fino' o 'Punteado Complejo'.
+ */
 public enum Border{
     NORMAL("Normal"){
         @Override
@@ -12,7 +16,7 @@ public enum Border{
 
     PIXELEADO("Pixelado"){
         @Override
-        public void apply(DrawingContext dc) {
+        public void apply(DrawingContext dc){
             dc.setLineWidth(5);
             dc.setLineCap(LineCap.BUTT);
             dc.setLineDashes(1, 1);
@@ -21,7 +25,7 @@ public enum Border{
 
     PUNTEADO_FINO("Punteado Fino"){
         @Override
-        public void apply(DrawingContext dc) {
+        public void apply(DrawingContext dc){
             dc.setLineWidth(1);
             dc.setLineCap(LineCap.ROUND);
             dc.setLineDashes(2, 6);
@@ -30,7 +34,7 @@ public enum Border{
 
     PUNTEADO_COMPLEJO("Punteado Complejo"){
         @Override
-        public void apply(DrawingContext dc) {
+        public void apply(DrawingContext dc){
             dc.setLineWidth(3);
             dc.setLineCap(LineCap.SQUARE);
             dc.setLineDashes(25, 10, 15, 10);
@@ -43,6 +47,11 @@ public enum Border{
         this.borderName = displayName;
     }
 
+    /**
+     * Aplica el estilo de borde al contexto de dibujo especificado.
+     *
+     * @param dc    El contexto de dibujo sobre el cual aplicar el borde.
+     */
     public abstract void apply(DrawingContext dc);
 
     @Override

@@ -4,6 +4,10 @@ import src.backend.model.Border;
 import src.backend.model.Figure;
 import src.backend.model.Color;
 
+/**
+ * Enum que representa el tipo de efecto de la figura, ya sea aclaramiento,
+ * oscurecimiento, espejado horizontal y espejado vertical.
+ */
 public enum EffectType{
     LIGHTENED(){
         @Override
@@ -40,5 +44,9 @@ public enum EffectType{
         }
     };
 
+    /**
+     * @param dc    El contexto de dibujo donde se aplicará el efecto.
+     * @param fig   La figura a la que se le aplicará el efecto.
+     */
     public abstract void apply(DrawingContext dc, Figure fig);
 }
