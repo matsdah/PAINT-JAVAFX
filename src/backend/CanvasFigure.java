@@ -1,6 +1,4 @@
 package src.backend;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import src.backend.model.*;
 import src.backend.model.effects.EffectType;
 import java.util.*;
@@ -35,6 +33,7 @@ public class CanvasFigure implements Movable, Drawable{
         return fig.contains(point);
     }
 
+    /* Getters y setter */
     public void setFillColor(Color color){
         fig.setFillColor(color);
     }
@@ -52,10 +51,10 @@ public class CanvasFigure implements Movable, Drawable{
     }
 
     @Override
-    public void draw(GraphicsContext gc, boolean isSelected){
-        fig.draw(gc, isSelected);
-        for(EffectType eff: effects){
-            eff.apply(gc, fig);
+    public void draw(DrawingContext dc, boolean isSelected){
+        fig.draw(dc, isSelected);
+        for (EffectType eff : effects) {
+            eff.apply(dc, fig);
         }
     }
 

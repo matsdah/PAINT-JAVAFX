@@ -11,6 +11,7 @@ public class Point implements Movable{
         this.y = y;
     }
 
+    /* Getters */
     public double getX(){
         return x;
     }
@@ -37,7 +38,7 @@ public class Point implements Movable{
 
     @Override
     public String toString(){
-        return "Pointer at: [ %.2f : %.2f ]".formatted(x, y);
+        return "Pointer at: [%.2f : %.2f]".formatted(x, y);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class Point implements Movable{
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode(){
         return Objects.hash(x, y);
     }
 }

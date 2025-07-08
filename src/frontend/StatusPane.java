@@ -14,7 +14,7 @@ public class StatusPane extends BorderPane{
 		statusLabel.setStyle("-fx-font-size: 16");
 		setCenter(statusLabel);
 	}
-	
+
 	public void updateStatus(String text){
 		statusLabel.setText(text);
 	}

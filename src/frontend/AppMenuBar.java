@@ -3,12 +3,12 @@ import javafx.application.Platform;
 import javafx.scene.control.*;
 
 public class AppMenuBar extends MenuBar{
-    public AppMenuBar() {
+    public AppMenuBar(){
         initFileMenu();
         initHelpMenu();
     }
 
-    private void initFileMenu() {
+    private void initFileMenu(){
         Menu fileMenu = new Menu("Archivo");
         MenuItem exitItem = new MenuItem("Salir");
         exitItem.setOnAction(e -> confirmExit());
@@ -16,7 +16,7 @@ public class AppMenuBar extends MenuBar{
         getMenus().add(fileMenu);
     }
 
-    private void initHelpMenu() {
+    private void initHelpMenu(){
         Menu helpMenu = new Menu("Ayuda");
         MenuItem aboutItem = new MenuItem("Acerca De");
         aboutItem.setOnAction(e -> showAboutDialog());
@@ -24,7 +24,7 @@ public class AppMenuBar extends MenuBar{
         getMenus().add(helpMenu);
     }
 
-    private void confirmExit() {
+    private void confirmExit(){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Salir");
         alert.setHeaderText("Salir de la aplicación");
@@ -34,7 +34,7 @@ public class AppMenuBar extends MenuBar{
                 .ifPresent(response -> Platform.exit());
     }
 
-    private void showAboutDialog() {
+    private void showAboutDialog(){
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Acerca De");
         alert.setHeaderText(null);

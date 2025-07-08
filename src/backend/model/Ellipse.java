@@ -1,6 +1,5 @@
 package src.backend.model;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
+import src.backend.DrawingContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +16,8 @@ public class Ellipse extends Figure{
     }
 
     @Override
-    public void drawFill(GraphicsContext gc){
-        gc.fillOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
+    public void drawFill(DrawingContext dc){
+        dc.fillOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
     }
 
     @Override
@@ -49,14 +48,14 @@ public class Ellipse extends Figure{
     }
 
     @Override
-    public void draw(GraphicsContext gc, boolean isSelected){
-        gc.save();
-        gc.setFill(this.fillColor);
-        gc.fillOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
-        this.border.apply(gc);
-        gc.setStroke(isSelected ? Color.RED : Color.BLACK);
-        gc.strokeOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
-        gc.restore();
+    public void draw(DrawingContext dc, boolean isSelected){
+        dc.save();
+        dc.setFill(this.fillColor);
+        dc.fillOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
+        dc.setStroke(isSelected ? new Color(255, 0, 0, 1.0) : new Color(0, 0, 0, 1.0));
+        this.border.apply(dc);
+        dc.strokeOval(centerPoint.getX() - difX, centerPoint.getY() - difY, difX * 2, difY * 2);
+        dc.restore();
     }
 
     @Override
@@ -68,7 +67,7 @@ public class Ellipse extends Figure{
 
     @Override
     public List<Figure> widthDivide(int n){
-        if (n <= 0){
+        if (n <= 0) {
             return null;
         }
         List<Figure> newEllipses = new ArrayList<>();
@@ -78,7 +77,7 @@ public class Ellipse extends Figure{
         double originalLeftX = centerPoint.getX() - this.difX;
         double centeredY = centerPoint.getY() - this.difY + (this.difY * 2 - newRadiusY * 2) / 2;
 
-        for(int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             Point newCenter = new Point(originalLeftX + newRadiusX + (i * 2 * newRadiusX), centeredY + newRadiusY);
             Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + newRadiusY);
             newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));
@@ -89,7 +88,7 @@ public class Ellipse extends Figure{
 
     @Override
     public List<Figure> heightDivide(int n){
-        if (n <= 0){
+        if (n <= 0) {
             return null;
         }
         List<Figure> newEllipses = new ArrayList<>();
@@ -99,7 +98,7 @@ public class Ellipse extends Figure{
         double originalTopY = centerPoint.getY() - this.difY;
         double centeredX = centerPoint.getX() - this.difX + (this.difX * 2 - newRadiusX * 2) / 2;
 
-        for(int i = 0; i < n; i++){
+        for (int i = 0; i < n; i++) {
             Point newCenter = new Point(centeredX + newRadiusX, originalTopY + newRadiusY + (i * 2 * newRadiusY));
             Point newRadiusPoint = new Point(newCenter.getX() + newRadiusX, newCenter.getY() + newRadiusY);
             newEllipses.add(new Ellipse(newCenter, newRadiusPoint, this.fillColor, this.border));

@@ -9,7 +9,7 @@ public class MainFrame extends VBox{
         AppMenuBar menuBar = new AppMenuBar();
         StatusPane statusPane = new StatusPane();
         PaintPane paintPane = new PaintPane(canvasState, statusPane);
-        VBox.setVgrow(paintPane, Priority.ALWAYS);      /* El PaintPane va a crecer y ocupar todos el espacio restante */
+        VBox.setVgrow(paintPane, Priority.ALWAYS);
         getChildren().addAll(menuBar, paintPane, statusPane);
     }
 }

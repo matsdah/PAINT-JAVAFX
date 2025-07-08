@@ -1,6 +1,5 @@
 package src.backend.model;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
+import src.backend.DrawingContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +22,8 @@ public class Rectangle extends Figure{
     }
 
     @Override
-    public void drawFill(GraphicsContext gc){
-        gc.fillRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
+    public void drawFill(DrawingContext dc){
+        dc.fillRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
     }
 
     @Override
@@ -53,16 +52,17 @@ public class Rectangle extends Figure{
     }
 
     @Override
-    public void draw(GraphicsContext gc, boolean isSelected){
-        gc.save();
-        gc.setFill(this.fillColor);
-        gc.fillRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
-        this.border.apply(gc);
-        gc.setStroke(isSelected ? Color.RED : Color.BLACK);
-        gc.strokeRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
-        gc.restore();
+    public void draw(DrawingContext dc, boolean isSelected){
+        dc.save();
+        dc.setFill(this.fillColor);
+        dc.fillRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
+        dc.setStroke(isSelected ? new Color(255, 0, 0, 1.0) : new Color(0, 0, 0, 1.0));
+        this.border.apply(dc);
+        dc.strokeRect(topLeft.getX(), topLeft.getY(), getWidth(), getHeight());
+        dc.restore();
     }
 
+    /* Getters */
     public Point getTopLeft(){
         return topLeft;
     }
@@ -71,16 +71,10 @@ public class Rectangle extends Figure{
         return bottomRight;
     }
 
-    /*
-     * Calcula el ancho de un rectangulo dados sus dos puntos en el lienzo.
-     */
     private double getWidth(){
         return Math.abs(bottomRight.getX() - topLeft.getX());
     }
 
-    /*
-     * Calcula el alto de un rectangulo dados sus dos puntos en el lienzo.
-     */
     private double getHeight(){
         return Math.abs(bottomRight.getY() - topLeft.getY());
     }

@@ -6,25 +6,22 @@ import javafx.scene.layout.*;
 import src.backend.CanvasFigure;
 import src.backend.CanvasState;
 import src.backend.model.*;
+import src.backend.model.Border;
+import src.backend.model.effects.EffectType;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
-import src.backend.model.Border;
-import src.backend.model.effects.EffectType;
 import java.util.*;
-import static javax.swing.JOptionPane.showInputDialog;
 
 public class PaintPane extends BorderPane{
 
-	private final CanvasState canvasState;					/* Estado del canvas */
+	private final CanvasState canvasState;
 	private final Canvas canvas = new Canvas(800, 600);
 	private final GraphicsContext gc = canvas.getGraphicsContext2D();
-	private static final Color DEFAULT_FILL_COLOR = Color.YELLOW;
+	private final JavaFXDrawingContext dc = new JavaFXDrawingContext(gc);
 
-	/* Botones de barra izquierda */
 	private final ToggleButton selectionButton = new ToggleButton("Seleccionar");
 	private final ToggleButton rectangleButton = new ToggleButton("Rectángulo");
 	private final ToggleButton circleButton = new ToggleButton("Círculo");
@@ -35,13 +32,11 @@ public class PaintPane extends BorderPane{
 	private final Button copyFormatButton = new Button("Copiar Fmt.");
 	private final Button pasteFormatButton = new Button("Pegar Fmt.");
 
-	/* Botones de barra derecha para operaciones */
 	private final ToggleButton divideByLengthButton = new ToggleButton("Dividir An.");
 	private final ToggleButton divideByHeightButton = new ToggleButton("Dividir Al.");
 	private final ToggleButton multiplyButton = new ToggleButton("Multiplicar");
 	private final ToggleButton moveToButton = new ToggleButton("Trasladar");
 
-	/* Barra superior para efectos */
 	private final Label effectsLabel = createTitleLabel("Efectos:");
 	private final CheckBox lightenCheckbox = new CheckBox("Aclaramiento");
 	private final CheckBox darkenCheckbox = new CheckBox("Oscurecimiento");
@@ -66,19 +61,12 @@ public class PaintPane extends BorderPane{
 		effectMap.put(mirrorVCheckbox, EffectType.VERTICAL_MIRROR);
 	}
 
-	/* Selector de color de relleno (ColorPicker) */
-	private final ColorPicker fillColorPicker = new ColorPicker(DEFAULT_FILL_COLOR);
+	private final ColorPicker fillColorPicker = new ColorPicker(javafx.scene.paint.Color.YELLOW);
 
-	/* Dibujar una figura */
 	private Point startPoint;
-
-	/* Seleccionar una figura */
 	private CanvasFigure selectedFigure;
-
-	/* Barra de estado */
 	private final StatusPane statusPane;
 
-	/* Portapapeles para guardar el formato copiado de la figura */
 	private static class FormatClipboard{
 		static Color fillColor;
 		static Border borderStyle;
@@ -98,13 +86,8 @@ public class PaintPane extends BorderPane{
 		return topMenu;
 	}
 
-	/*
-	 * Metodo que utiliza un build para crear ambas cajas izquierda y derecha,
-	 * ademas un metodo auxiliar para implementar un titulo, el cual se puede reutilizar.
-	 * Lo usamos para hacer el label operaciones.
-	*/
 	private void initToggleButtons(ToggleButton[] buttons, ToggleGroup group){
-		for(ToggleButton button : buttons){
+		for (ToggleButton button : buttons) {
 			button.setMinWidth(90);
 			button.setPrefWidth(90);
 			button.setToggleGroup(group);
@@ -119,7 +102,7 @@ public class PaintPane extends BorderPane{
 		box.setPrefWidth(120);
 		box.setFillWidth(false);
 		box.setMinHeight(300);
-		for(Node node : nodes){
+		for (Node node : nodes) {
 			box.getChildren().add(node);
 			box.getChildren().add(new Separator());
 		}
@@ -133,7 +116,6 @@ public class PaintPane extends BorderPane{
 	}
 
 	public PaintPane(CanvasState canvasState, StatusPane statusPane){
-
 		this.canvasState = canvasState;
 		this.statusPane = statusPane;
 
@@ -194,9 +176,8 @@ public class PaintPane extends BorderPane{
 		buttonsTopBox.setAlignment(Pos.CENTER);
 		setTop(buttonsTopBox);
 		setBottom(statusPane);
-		StackPane canvasWrapper = new StackPane(canvas);	/* StackPane ya que redimensiona a sus hijos correctamente */
-		canvasWrapper.setMinSize(0, 0);				/* Para que no se corran las funcionalidades de los botones */
-		/* Para que sea responsive el statusPane */
+		StackPane canvasWrapper = new StackPane(canvas);
+		canvasWrapper.setMinSize(0, 0);
 		statusPane.setMinHeight(30);
 		setMinSize(600, 400);
 
@@ -207,7 +188,6 @@ public class PaintPane extends BorderPane{
 		setCenter(canvasWrapper);
 	}
 
-	/* Metodo para lanzar un mensaje de error al usuario */
 	private void errorDialog(String s){
 		Alert alert = new Alert(Alert.AlertType.ERROR);
 		alert.setTitle("¡ERROR!");
@@ -228,7 +208,11 @@ public class PaintPane extends BorderPane{
 		if(!checkForSelectedFigure()){
 			return;
 		}
-		Optional<String> result = showInputDialog("Dividir a lo ancho", "Ingrese cant. de divisiones:").describeConstable();
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setTitle("Dividir a lo ancho");
+		dialog.setHeaderText(null);
+		dialog.setContentText("Ingrese cant. de divisiones:");
+		Optional<String> result = dialog.showAndWait();
 		result.ifPresent(nStr -> {
 			try{
 				int n = Integer.parseInt(nStr);
@@ -249,11 +233,15 @@ public class PaintPane extends BorderPane{
 		if(!checkForSelectedFigure()){
 			return;
 		}
-		Optional<String> result = showInputDialog("Dividir a lo alto", "Ingrese cantidad de divisiones...").describeConstable();
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setTitle("Dividir a lo alto");
+		dialog.setHeaderText(null);
+		dialog.setContentText("Ingrese cantidad de divisiones...");
+		Optional<String> result = dialog.showAndWait();
 		result.ifPresent(nStr -> {
 			try{
 				int n = Integer.parseInt(nStr);
-				if (n <= 0){
+				if(n <= 0){
 					throw new NumberFormatException("El número debe ser un entero positivo...");
 				}
 				canvasState.heightDivide(selectedFigure, n);
@@ -270,7 +258,11 @@ public class PaintPane extends BorderPane{
 		if(!checkForSelectedFigure()){
 			return;
 		}
-		Optional<String> result = showInputDialog("Multiplicar figura", "Ingrese la cantidad de copias...").describeConstable();
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setTitle("Multiplicar figura");
+		dialog.setHeaderText(null);
+		dialog.setContentText("Ingrese la cantidad de copias...");
+		Optional<String> result = dialog.showAndWait();
 		result.ifPresent(nStr -> {
 			try{
 				int n = Integer.parseInt(nStr);
@@ -290,11 +282,15 @@ public class PaintPane extends BorderPane{
 		if(!checkForSelectedFigure()){
 			return;
 		}
-		Optional<String> result = showInputDialog("Trasladar figura", "Ingrese las coordenadas [X, Y]...").describeConstable();
+		TextInputDialog dialog = new TextInputDialog();
+		dialog.setTitle("Trasladar figura");
+		dialog.setHeaderText(null);
+		dialog.setContentText("Ingrese las coordenadas [X, Y]...");
+		Optional<String> result = dialog.showAndWait();
 		result.ifPresent(coords -> {
 			try{
 				String[] parts = coords.split(",");
-				if (parts.length != 2){
+				if (parts.length != 2) {
 					throw new NumberFormatException();
 				}
 				double x = Double.parseDouble(parts[0].trim());
@@ -308,19 +304,15 @@ public class PaintPane extends BorderPane{
 		});
 	}
 
-	/*
-	 * Metodos privado para manejar y actualizar los eventos de los efectos
-	 * de aclarecimiento, oscurecimiento y espejos.
- 	*/
 	private void updateEffectCheckboxes(CanvasFigure figure){
-		for (Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()){
+		for(Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()){
 			entry.getKey().setSelected(figure.hasEffect(entry.getValue()));
 		}
 	}
 
 	private void onEffectChanged(){
 		if(selectedFigure != null){
-			for(Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()) {
+			for(Map.Entry<CheckBox, EffectType> entry : effectMap.entrySet()){
 				if(entry.getKey().isSelected()){
 					selectedFigure.addEffect(entry.getValue());
 				}else{
@@ -331,11 +323,6 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
-	/*
-	 * Se ejecuta al hacer click sin arrastrar sobre el lienzo.
-	 * Si está activada la herramienta de selección (selectionButton)
-	 * busca si el punto clickeado pertenece a alguna figura.
-	 */
 	private void onMouseClicked(MouseEvent event){
 		if(selectionButton.isSelected()){
 			Point eventPoint = new Point(event.getX(), event.getY());
@@ -350,7 +337,8 @@ public class PaintPane extends BorderPane{
 			}
 			if(found){
 				statusPane.updateStatus(label.toString());
-				fillColorPicker.setValue(selectedFigure.getFillColor());
+				fillColorPicker.setValue(new javafx.scene.paint.Color(selectedFigure.getFillColor().getRed() / 255.0, selectedFigure.getFillColor().getGreen() / 255.0,
+						selectedFigure.getFillColor().getBlue() / 255.0, selectedFigure.getFillColor().getOpacity()));
 				borderStyleChooser.setValue(selectedFigure.getBorder());
 			}else{
 				selectedFigure = null;
@@ -360,10 +348,6 @@ public class PaintPane extends BorderPane{
 		}
 	}
 
-	/*
-	 * Guarda el punto donde el mouse fue presionado. Este punto se usa
-	 * para luego calcular la posicion de la figura al soltar el mouse.
-	 */
 	private void onMousePressed(MouseEvent event){
 		startPoint = new Point(event.getX(), event.getY());
 		if(selectionButton.isSelected()){
@@ -386,16 +370,14 @@ public class PaintPane extends BorderPane{
 				statusPane.updateStatus("Arrastrando: " + selectedFigure);
 				updateEffectCheckboxes(selectedFigure);
 				redrawCanvas();
-			}else if(selectedFigure != null){
-				statusPane.updateStatus("Arrastrando: " + selectedFigure);
+			}else{
+				if(selectedFigure != null){
+					statusPane.updateStatus("Arrastrando: " + selectedFigure);
+				}
 			}
 		}
 	}
 
-	/*
-	 * Se ejecuta cuando se suelta el mouse. Según la herramienta activa
-	 * crea una nueva figura con startPoint y endPoint. Agrega esa figura al canvasState y la dibuja.
-	 */
 	private void onMouseRelease(MouseEvent event){
 		Point endPoint = new Point(event.getX(), event.getY());
 		if(selectionButton.isSelected() || startPoint == null){
@@ -403,7 +385,8 @@ public class PaintPane extends BorderPane{
 		}
 
 		Figure newFigure = null;
-		Color actualColor = fillColorPicker.getValue();
+		Color actualColor = new Color((int) (fillColorPicker.getValue().getRed() * 255), (int) (fillColorPicker.getValue().getGreen() * 255),
+				(int) (fillColorPicker.getValue().getBlue() * 255), fillColorPicker.getValue().getOpacity());
 		Border actualBorderStyle = borderStyleChooser.getValue();
 		boolean found = false;
 		Iterator<Map.Entry<ToggleButton, FigureFactory>> it = figureFactories.entrySet().iterator();
@@ -417,26 +400,19 @@ public class PaintPane extends BorderPane{
 		}
 
 		if(newFigure != null){
-			canvasState.addFigure(newFigure, lightenCheckbox.isSelected(), darkenCheckbox.isSelected(), mirrorHCheckbox.isSelected(), mirrorVCheckbox.isSelected());
+			canvasState.addFigure(newFigure, lightenCheckbox.isSelected(), darkenCheckbox.isSelected(),
+					mirrorHCheckbox.isSelected(), mirrorVCheckbox.isSelected());
 		}
 		startPoint = null;
 		redrawCanvas();
 	}
 
-	/*
-	 * Se muestra la informacion de la figura si el cursor pasa
-	 * por encima de alguna dentro del lienzo.
-	 */
 	private void onMouseMoved(MouseEvent event){
 		Point eventPoint = new Point(event.getX(), event.getY());
 		CanvasFigure topFigure = canvasState.selectFigureAtPoint(eventPoint);
 		statusPane.updateStatus(topFigure == null ? eventPoint.toString() : topFigure.toString());
 	}
 
-	/*
-	 * Calcula cuánto se movió el mouse desde startPoint.
-	 * Mueve la figura seleccionada y redibuja el lienzo.
-	 */
 	private void onMouseDragged(MouseEvent event){
 		if(selectionButton.isSelected() && selectedFigure != null && startPoint != null){
 			Point eventPoint = new Point(event.getX(), event.getY());
@@ -460,7 +436,7 @@ public class PaintPane extends BorderPane{
 	}
 
 	private void onCopyFormatButton(){
-		if(checkForSelectedFigure()) {
+		if(checkForSelectedFigure()){
 			FormatClipboard.fillColor = selectedFigure.getFillColor();
 			FormatClipboard.borderStyle = selectedFigure.getBorder();
 			pasteFormatButton.setDisable(false);
@@ -479,7 +455,8 @@ public class PaintPane extends BorderPane{
 
 	private void onChangeFigureProperty(){
 		if(selectedFigure != null){
-			selectedFigure.setFillColor(fillColorPicker.getValue());
+			selectedFigure.setFillColor(new Color((int) (fillColorPicker.getValue().getRed() * 255), (int) (fillColorPicker.getValue().getGreen() * 255),
+					(int) (fillColorPicker.getValue().getBlue() * 255), fillColorPicker.getValue().getOpacity()));
 			selectedFigure.setBorder(borderStyleChooser.getValue());
 			redrawCanvas();
 		}
@@ -493,7 +470,7 @@ public class PaintPane extends BorderPane{
 		gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 		for(CanvasFigure figure : canvasState){
 			boolean isSelected = figure.equals(selectedFigure);
-			figure.draw(gc, isSelected);
+			figure.draw(dc, isSelected);
 		}
 	}
 }
