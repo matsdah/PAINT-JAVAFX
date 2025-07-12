@@ -1,6 +1,6 @@
 package src.backend;
 import src.backend.model.*;
-import src.backend.model.effects.EffectType;
+import src.backend.model.EffectType;
 import java.util.*;
 import java.util.function.BiFunction;
 
@@ -11,6 +11,14 @@ public class CanvasState implements Iterable<CanvasFigure>{
 
     private CanvasFigure selectedFigure;
     private final static double DEFAULT_OFFSET_MULTIPLY = 10.0;
+
+    /**
+     * Busca la figura más cercana al frente (última agregada) que contenga el punto dado.
+     * Si la encuentra, la establece como la figura seleccionada actual y la devuelve.
+     *
+     * @param point el punto a verificar si pertenece a alguna figura
+     * @return la figura superior que contiene el punto, o null si no se encuentra ninguna
+     */
 
     public CanvasFigure selectFigureAtPoint(Point point){
         this.selectedFigure = null;

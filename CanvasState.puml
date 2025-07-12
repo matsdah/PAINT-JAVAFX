@@ -1,0 +1,23 @@
+@startuml
+class src.backend.CanvasState {
+- List<CanvasFigure> figures
+- CanvasFigure selectedFigure
+- {static} double DEFAULT_OFFSET_MULTIPLY
++ CanvasFigure selectFigureAtPoint(Point)
+- EnumSet<EffectType> checkEffects(boolean,boolean,boolean,boolean)
++ void addFigure(Figure,boolean,boolean,boolean,boolean)
++ void deleteFigure(CanvasFigure)
+- void divideAndReplace(CanvasFigure,int,BiFunction<CanvasFigure,Integer,List<CanvasFigure>>)
+- void checkN(int)
++ void widthDivide(CanvasFigure,int)
++ void heightDivide(CanvasFigure,int)
++ void multiply(CanvasFigure,int)
++ void moveTo(CanvasFigure,Point)
++ Iterator<CanvasFigure> iterator()
+}
+
+
+
+
+src.backend.Iterable <|.. src.backend.CanvasState
+@enduml
