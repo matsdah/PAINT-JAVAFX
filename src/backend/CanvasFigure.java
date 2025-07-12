@@ -1,6 +1,6 @@
 package src.backend;
 import src.backend.model.*;
-import src.backend.model.EffectType;
+import src.backend.model.effects.EffectType;
 import java.util.*;
 
 public class CanvasFigure implements Movable, Drawable{

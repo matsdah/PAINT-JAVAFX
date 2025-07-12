@@ -1,5 +1,8 @@
-package src.backend.model;
+package src.backend.model.effects;
 import src.backend.DrawingContext;
+import src.backend.model.Border;
+import src.backend.model.Figure;
+import src.backend.model.Color;
 
 /**
  * Enum que representa el tipo de efecto de la figura, ya sea aclaramiento,
