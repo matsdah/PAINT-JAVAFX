@@ -1,4 +1,4 @@
-# TPE_POO
+# PAINT-JAVAFX
 
 Authors: 
 Mateo Andrioli, Santino Giambelluca, Franco Pedretti, Ignacio Andreotti
